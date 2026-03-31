@@ -1,0 +1,13 @@
+
+::-webkit-scrollbar {
+    width: 4px; height: 4px;
+}
+ ::-webkit-scrollbar-track {
+    background: rgba(1, 30, 65, 0.05);
+    border-radius: 6px;
+}  
+::-webkit-scrollbar-thumb {
+    background: rgba(1, 30, 65, 0.85);
+    border-radius: 0;
+}
+.sidebar-nav{ overflow: auto; max-height: 100%;}

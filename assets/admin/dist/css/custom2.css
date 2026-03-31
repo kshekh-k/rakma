@@ -1,0 +1,31 @@
+
+::-webkit-scrollbar {
+    width: 4px; height: 4px;
+}
+ ::-webkit-scrollbar-track {
+    background: rgba(1, 30, 65, 0.05);
+    border-radius: 6px;
+}  
+::-webkit-scrollbar-thumb {
+    background: rgba(1, 30, 65, 0.85);
+    border-radius: 0;
+}
+
+
+.scroll-thick::-webkit-scrollbar {
+    width: 10px; height: 10px;
+}
+
+
+
+body{background: #eeeeee;}
+.left-sidebar{ position: fixed; height: 100vh}
+.sidebar-nav{ overflow: auto; max-height: 100%;}
+.sidebar-nav ul .sidebar-item .sidebar-link i{font-size: 17px;}
+.card{box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px; border-radius: 5px;}
+.box{ border-radius: 5px;}
+table{ border-collapse: collapse}
+body table.dataTable{border-collapse: collapse!important}
+.btn { border-radius: 5px;}
+.page-item.active .page-link{background-color: #28b779;
+    border-color: #28b779;}

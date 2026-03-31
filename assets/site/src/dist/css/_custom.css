@@ -1,0 +1,15 @@
+.abtSlider{
+	border: 1px solid rgba(0,0,0,0.1); padding: 1rem; max-width: 100%; ;
+}
+.photo{ margin-top: 10px; margin-bottom: 10px;}
+.upload-file{ max-width: 280px; margin: auto;}
+ 
+
+
+.abtSlider img{ max-height: 100%; object-fit: contain;}
+
+@media (max-width:479px){
+  .arrow__icon{
+    display: none!important
+  }
+}

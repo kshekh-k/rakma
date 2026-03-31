@@ -1,0 +1,127 @@
+.abtSlider{
+	border: 1px solid rgba(0,0,0,0.1); padding: 1rem; max-width: 100%; ;
+}
+.photo{ margin-top: 10px; margin-bottom: 10px;}
+.upload-file{ max-width: 280px; margin: auto;}
+ 
+
+
+.abtSlider img{ max-height: 100%; object-fit: contain;}
+
+@media (max-width:479px){
+  .arrow__icon{
+    display: none!important
+  }
+}
+
+#rakma__memebers{
+  padding:2rem 0 ;
+}
+
+
+.form-list{ padding:4rem 0 0; flex-wrap:wrap; justify-content: center; margin:0 -3px;}
+.form-field{ padding: 3px;}
+.field-name{ width:100%}
+.field-post{ width:100%}
+.field-district{ width:100%}
+
+
+.table-overflow{ overflow: auto; max-width:100%; }
+
+.testclass
+	{
+		width: 100%; border-collapse: collapse;
+	}
+	.testclass , tr , td , th
+	{
+		border: 1px solid rgba(34,36,38,0.1);
+		font-weight: 500;
+		font-size: 13px;
+		text-align: left;
+		padding: 10px 15px;
+	}
+	.testclass th
+	{font-weight:700;
+   font-size: 15px;
+    background: #f9fafb;
+    color: rgba(0,0,0,.87);
+    letter-spacing: 1px; white-space:nowrap;
+	}
+	.testclass td{ white-space:nowrap;}
+  .pagination{ margin:2rem auto;}
+  .pagination li > a{padding: 0.5rem 1rem; display: inline-flex;}
+
+
+  @media (min-width:500px){
+	.field-name{ width:50%}
+	.field-post{ width:50%}
+	.field-district{ width:50%}
+  }
+  @media (min-width:1024px){
+.form-list{ justify-content: between}
+    .field-name{ width:40%;}
+	.field-post{ width:auto}
+    .field-district{ width:18%;} 
+  }
+
+  .policies{
+	  padding:1rem 0;
+
+  }
+
+  .policies h3{ font-size:1.35rem; font-weight: 600; color:#333; padding:1rem 0 0;}
+  .policies h4{ font-size:1.15rem; font-weight: 600; color:#333; padding:1rem 0 0;}
+  .policies p{ color: #333; line-height:1.5; font-weight:400; padding:1rem 0;}
+  .policies li{ color: #333; line-height:1.5; font-weight:400; padding:0.5rem 0;}
+  .policies .list { list-style: disc; padding-left:20px;}
+
+  .members-list-pdf{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .dist-list{
+    max-width:100%;
+    flex: 0 0 100%;
+    padding-bottom:20px;
+  }
+  
+  @media (min-width:640px){
+  .dist-list{
+    max-width:50%;
+    flex: 0 0 50%;
+  }
+}
+
+  @media (min-width:370px){
+  .dist-list{
+    max-width:50%;
+    flex: 0 0 50%;
+  }
+}
+
+@media (min-width:768px){
+  .dist-list{
+    max-width:33.3333334%;
+    flex: 0 0 33.3333334%;
+  }
+  }
+
+  @media (min-width:1024px){
+  .dist-list{
+    max-width:25%;
+    flex: 0 0 25%;
+  }
+}
+
+  .link-list{
+    padding-top:10px; display:flex; 
+    flex-direction: column;
+
+  }
+  .link-list li{
+    display:block; padding:2px 0;
+  }
+
+ 

@@ -1,0 +1,27 @@
+{
+  "name": "rakma",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "watch:css": "npx tailwindcss -i ./assets/site/src/tailwind/index.css -o ./assets/site/src/dist/css/styles.css -w --verbose  "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "postcss-cli": "^8.3.1",
+    "postcss-focus": "^5.0.1",
+    "tailwindcss": "^3.4.13"
+  },
+  "dependencies": {
+    "@tailwindcss/line-clamp": "^0.2.1",
+    "@tailwindcss/typography": "^0.4.1",
+    "alpinejs": "^2.6.0",
+    "lightgallery": "^2.1.8",
+    "swiper": "^6.7.5",
+    "typeface-montserrat": "^1.1.13"
+  }
+}
