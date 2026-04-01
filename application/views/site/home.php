@@ -322,10 +322,12 @@
                 </div>
 
                 <div class="flex justify-center mt-10 gallery__<?php echo $gallery['id']; ?>">
+                    <?php if (!empty($gallery_total) && $gallery_total > 6) { ?>
                     <a href="javascript:void(0)"
-                        onclick="loadmore('<?php echo $gallery['id']; ?>' , '3', '<?php echo count($gallery_images); ?>');"
-                        class="rounded flex justify-center items-center font-medium text-white tracking-wider uppercase bg-primary hover:bg-secondary shadow-md py-4 px-10 ">View
-                        All</a>
+                        onclick="loadmore('<?php echo $gallery['id']; ?>', 3, 6);"
+                        class="rounded flex justify-center items-center font-medium text-white tracking-wider uppercase bg-primary hover:bg-secondary shadow-md py-4 px-10">Load
+                        More</a>
+                    <?php } ?>
                 </div>
 
 
@@ -333,13 +335,6 @@
         </div>
     </section>
 
-    <script type="text/javascript">
-    lightGallery(document.getElementById('lightgallery__<?php echo $gallery['id']; ?>'), {
-        plugins: [lgZoom, lgThumbnail],
-        speed: 500,
-
-    });
-    </script>
 
     <?php }  ?>
 
@@ -462,15 +457,11 @@
 
                     <?php }}  ?>
 
-
-
                 </div>
 
 
-
-
                 <div class="flex justify-center mt-10">
-                    <a href="javascript:void(0)"
+                    <a href="<?php echo base_url('/page/downloads'); ?>"
                         class="rounded flex justify-center items-center font-medium text-white tracking-wider uppercase bg-primary hover:bg-blues shadow-md py-4 px-10 border border-white">View
                         All</a>
                 </div>
@@ -491,18 +482,35 @@
 
 
 <script type="text/javascript">
-function gallery() {
-    lightGallery(document.getElementById('lightgallery'), {
-        plugins: [lgZoom, lgThumbnail],
-        speed: 500,
+const lightGalleryInstances = {};
 
-    });
+function gallery(gallery_id) {
+    const container = document.getElementById('lightgallery__' + gallery_id);
+
+    if (!container) {
+        return;
+    }
+
+    if (!lightGalleryInstances[gallery_id]) {
+        lightGalleryInstances[gallery_id] = lightGallery(container, {
+            selector: '.gl-thumb',
+            plugins: [lgZoom, lgThumbnail],
+            speed: 500,
+            download: false
+        });
+        return;
+    }
+
+    lightGalleryInstances[gallery_id].refresh();
 }
 
+<?php if (!empty($gallery) && !empty($gallery['id'])) { ?>
+document.addEventListener('DOMContentLoaded', function() {
+    gallery(<?php echo (int) $gallery['id']; ?>);
+});
+<?php } ?>
+
 function loadmore(gallery_id, per_page, row) {
-
-
-
     $.ajax({
         type: "POST",
         url: '<?php echo base_url('/page/loadmore') ?>',
@@ -513,11 +521,12 @@ function loadmore(gallery_id, per_page, row) {
         },
         dataType: "json",
         success: function(data) {
+            if (data.status && data.data) {
+                $(".galley_container__" + gallery_id).append(data.data);
+                gallery(gallery_id);
+            }
 
-            $(".galley_container__" + gallery_id).append(data.data);
-            $(".gallery__" + gallery_id).html(data.btn);
-            gallery();
-
+            $(".gallery__" + gallery_id).html(data.btn || '');
         }
     });
 }

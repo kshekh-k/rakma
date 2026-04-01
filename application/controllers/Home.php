@@ -49,11 +49,13 @@ class Home extends CI_Controller {
 		if (!empty($find_gallery)) {
 
 			$data['gallery'] = $find_gallery;
-			$data['gallery_images'] = $this->common->getAllRecordsByFieldName(array('gallery_id' => $find_gallery['id']) , 'gallery_image' ,  'ASC' , '3');
+			$data['gallery_images'] = $this->common->getAllRecordsByFieldName(array('gallery_id' => $find_gallery['id']) , 'gallery_image' ,  'DESC' , '6');
+			$data['gallery_total'] = $this->common->countrecords(array('gallery_id' => $find_gallery['id']) , 'gallery_image');
 			 
 		}else
 		{
 			$data['gallery']  = '';
+			$data['gallery_total'] = 0;
 		}
 
 
