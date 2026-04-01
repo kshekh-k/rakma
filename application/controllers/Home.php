@@ -31,7 +31,7 @@ class Home extends CI_Controller {
 		$data['title'] = 'Home';
 		$data['news_list'] = $this->common->getAllRecordsByFieldName(array('status' => '1' ) , 'news' , 'DESC' , '3');
 		$data['event_list'] = $this->common->getAllRecordsByFieldName(array('status' => '1' ) , 'events' , 'DESC' , '3');
-		$data['download_list'] = $this->common->getAllRecordsByFieldName(array('status' => '1' ) , 'downloads' , 'DESC' , '10');
+		$data['download_list'] = $this->common->getAllRecordsByFieldName(array('status' => '1' ) , 'downloads' , 'DESC' , '5');
 		//$data['today_birthdays'] = $this->common->getAllRecordsByFieldName(array('create_at' => '1' ) , 'users' , 'DESC');
 		$currentMonth = date('m'); // Current month in MM format
 		$currentDay = date('d'); // Current day in DD format
