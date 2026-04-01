@@ -350,7 +350,7 @@
 
                                 <div
                                     class=" hidden  group-hover:block md:origin-top-left md:absolute md:right-0 md:w-60 md:rounded-b-md md:shadow-lg py-2 md:py-1 md:bg-white md:ring-1 md:ring-black md:ring-opacity-5 md:transition md:ease-out md:duration-100 md:top-full md:shadow-3xl md:transform md:opacity-100 w-full">
-                                    <a href="javascript:void(0)"
+                                    <a href="<?php echo base_url('/page/downloads'); ?>"
                                         class="text-white block md:px-4 py-2 md:text-sm md:text-gray-700 md:hover:bg-blues md:hover:text-white font-semibold"
                                         role="menuitem">Downloads</a>
                                     <a href="<?php echo base_url('/page//privacypolicy'); ?>"

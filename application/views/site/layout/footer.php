@@ -128,7 +128,7 @@
                              class="text-gray-500 hover:text-secondary">Members PDF List</a></li>
                      <!-- <li><a href="<?php echo base_url('/page/mahasamitimember'); ?>"
                              class="text-gray-500 hover:text-secondary">Mahasamiti Applicant List</a></li> -->
-                     <li><a href="javascript:void(0)" class="text-gray-500 hover:text-secondary">Downloads</a></li>
+                     <li><a href="<?php echo base_url('/page/downloads'); ?>" class="text-gray-500 hover:text-secondary">Downloads</a></li>
                      <li><a href="<?php echo base_url('/page//privacypolicy'); ?>"
                              class="text-gray-500 hover:text-secondary">Privacy Policy</a></li>
                      <li><a href="<?php echo base_url('/page/termsconditions'); ?>"
