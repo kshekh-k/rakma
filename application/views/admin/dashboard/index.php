@@ -1,3 +1,17 @@
+        
+        <?php
+function formatNumber($num) {
+    if ($num >= 1000000000) {
+        return number_format($num / 1000000000, 2) . 'B';
+    } elseif ($num >= 1000000) {
+        return number_format($num / 1000000, 2) . 'M';
+    } elseif ($num >= 1000) {
+        return number_format($num / 1000, 2) . 'K';
+    } else {
+        return $num;
+    }
+}
+?>
         <!-- ============================================================== -->
         <!-- Page wrapper  -->
         <!-- ============================================================== -->
@@ -43,7 +57,7 @@
                     <a href="<?php echo base_url('admin/user'); ?>">
                         <div class="card card-hover">
                             <div class="box bg-primary text-center">
-                                <h1 class="font-light text-white"><?php echo countdata('users' , array('role'=>'User')); ?></h1>
+                                <h3 class="font-light text-white"><?php echo countdata('users' , array('role'=>'User')); ?></h3>
                                 <h6 class="text-white">Total Members</h6>
                             </div>
                         </div>
@@ -57,7 +71,7 @@
                         <a href="<?php echo base_url('admin/post'); ?>">
                         <div class="card card-hover">
                             <div class="box bg-success text-center">
-                                <h1 class="font-light text-white"><?php echo countdata('post'); ?></h1>
+                                <h3 class="font-light text-white"><?php echo countdata('post'); ?></h3>
                                 <h6 class="text-white">Total Social Works</h6>
                             </div>
                         </div>
@@ -72,8 +86,7 @@
                         <a href="<?php echo base_url('admin/transaction'); ?>">
                         <div class="card card-hover">
                             <div class="box bg-secondary text-center">
-                                <h1 class="font-light text-white">
-                                &#x20B9;<?php 
+                                <h3 class="font-light text-white" title="&#x20B9;<?php 
 
                                                         if(!empty($txn_info['total_txn']))
                                                         {
@@ -83,7 +96,14 @@
                                                             echo '0';
                                                         }
 
-                                                        ?></h1>
+                                                        ?>">
+                                &#x20B9;<?php 
+echo formatNumber(!empty($txn_info['total_txn']) ? $txn_info['total_txn'] : 0);
+?>
+                                                        
+                                                       
+                                                    </h3>
+                                                       
                                 <h6 class="text-white">Total Txn</h6>
                             </div>
                         </div>
@@ -98,11 +118,7 @@
                         <a href="<?php echo base_url('admin/donation'); ?>">
                         <div class="card card-hover">
                             <div class="box bg-info text-center">
-                                <h1 class="font-light text-white"> 
-
-                                  
-
-                                &#x20B9;<?php 
+                                <h3 class="font-light text-white" title="&#x20B9;<?php 
 
                                                         if(!empty($donation_info['total_donation']))
                                                         {
@@ -112,9 +128,15 @@
                                                             echo '0';
                                                         }
 
-                                                        ?>
+                                                        ?>"> 
 
-                            </h1>
+                                  
+
+                                &#x20B9;<?php 
+echo formatNumber(!empty($donation_info['total_donation']) ? $donation_info['total_donation'] : 0);
+?>
+
+                            </h3>
                                 <h6 class="text-white">Total Donation</h6>
                             </div>
                         </div>
@@ -129,7 +151,7 @@
                           <a href="<?php echo base_url('admin/download'); ?>">
                         <div class="card card-hover">
                             <div class="box bg-danger text-center">
-                                <h1 class="font-light text-white"><?php echo countdata('downloads'); ?></h1>
+                                <h3 class="font-light text-white"><?php echo countdata('downloads'); ?></h3>
                                 <h6 class="text-white">Total Downloads</h6>
                             </div>
                         </div>
@@ -144,7 +166,7 @@
                           <a href="<?php echo base_url('admin/contactquery'); ?>">
                         <div class="card card-hover">
                             <div class="box bg-dark text-center">
-                                <h1 class="font-light text-white"><?php echo countdata('contactquery'); ?></h1>
+                                <h3 class="font-light text-white"><?php echo countdata('contactquery'); ?></h3>
                                 <h6 class="text-white">Total Contact Query</h6>
                             </div>
                         </div>
