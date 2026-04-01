@@ -18,7 +18,7 @@ class Page extends CI_Controller {
 		$data['title'] = 'Home';
 		$data['news_list'] = $this->common->getAllRecordsByFieldName(array('status' => '1' ) , 'news' , 'DESC' , '3');
 		$data['event_list'] = $this->common->getAllRecordsByFieldName(array('status' => '1' ) , 'events' , 'DESC' , '3');
-		$data['download_list'] = $this->common->getAllRecordsByFieldName(array('status' => '1' ) , 'downloads' , 'DESC' , '10');
+		$data['download_list'] = $this->common->getAllRecordsByFieldName(array('status' => '1' ) , 'downloads' , 'DESC' , '5');
 		$find_gallery = $this->common->getSingleRecordByFieldName(array('status' => '1' , 'id'=>'8' ) , 'gallery');
 		if (!empty($find_gallery)) {
 			$data['gallery'] = $find_gallery;
