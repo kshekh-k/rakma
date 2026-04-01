@@ -264,6 +264,7 @@ if (!function_exists('countdata')) {
 				'default_font_size' => 9,
 				'default_font' => 'dejavusans',
 				'mode' => 'utf-8',
+				'tempDir' => FCPATH . 'tmp'
 
 			]);
 			$mpdf->autoScriptToLang = true;

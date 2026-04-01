@@ -21,7 +21,9 @@ html,body {scroll-behavior: smooth;}
 }
 
 
- 
+ .lightgallery {
+    margin: 0 auto;
+}
  
 
     /* use display:inline-flex to prevent whitespace issues. alternatively, you can put all the children of .rating-group on a single line */

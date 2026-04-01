@@ -46,8 +46,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/zoom/lg-zoom.min.js"
         integrity="sha512-BLW2Jrofiqm6m7JhkQDIh2olT0EBI58+hIL/AXWvo8gOXKmsNlU6myJyEkTy6rOAAZjn0032FRk8sl9RgXPYIQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-
+       
 </head>
 
 <body>

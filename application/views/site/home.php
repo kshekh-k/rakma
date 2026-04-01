@@ -303,11 +303,12 @@
             foreach ($gallery_images as $key => $images) {
               
            ?>
-                    <a class="gl-thumb rounded-md overflow-hidden relative"
+                    <a class="gl-thumb rounded-md overflow-hidden relative h-48 lg:h-60 xl:h-80 block group"
                         href="<?php echo base_url('uploads/'.$images["image"]); ?>">
-                        <img src="<?php echo base_url('uploads/'.$images["image"]); ?>" alt="">
+                        <img src="<?php echo base_url('uploads/'.$images["image"]); ?>" alt=""
+                            class="w-full h-full object-cover object-center transition duration-300 group-hover:scale-105">
                         <span
-                            class="absolute inset-0 bg-primary bg-opacity-70 opacity-0 transform scale-95 flex items-center justify-center">
+                            class="absolute inset-0 bg-primary/70 opacity-0 scale-95 flex items-center justify-center transition duration-300 group-hover:opacity-100 group-hover:scale-100">
                             <span class="text-white"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -399,19 +400,33 @@
 
 
                 <div
-                    class="border-t border-b border-white border-opacity-40 py-6 space-y-5 mt-10 divide-y divide-white divide-opacity-40">
+                    class="border-t border-b border-white border-opacity-40 py-6 mt-10 divide-y divide-white divide-opacity-40">
 
                     <?php if(!empty($download_list)){ foreach ($download_list as $key => $download) {   ?>
 
                     <div
-                        class="grid grid-cols-12 p-3  gap-3 hover:bg-opacity-10 bg-opacity-0 bg-white transition ease-in-out 0.35s rounded">
+                        class="grid grid-cols-12 p-3 py-4 gap-3 hover:bg-opacity-10 bg-opacity-0 bg-white transition ease-in-out ">
                         <div class="lg:col-span-4 col-span-12 relative pl-16">
                             <!-- Logo -->
                             <div class="flex justify-start xl:justify-center w-14  absolute left-0 ">
-                                <?php if ($download['image']) { ?>
-                                <img src="<?php echo base_url('assets/site'); ?>/src/dist/img/download-1.png" class=""
-                                    alt="">
-                                <?php }  ?>
+                                <?php if (!empty($download['image'])) { ?>    
+                                    <img 
+                                        src="<?php echo base_url('uploads/'.$download['image']); ?>" 
+                                        class="w-full h-full object-contain"
+                                        alt="download image" >
+
+                                <?php } else { ?>
+
+                                    <img 
+                                        src="<?php echo base_url('assets/site/src/dist/img/icon-logo-RAKMA.png'); ?>" 
+                                        class="w-full h-full object-contain"
+                                        alt="default image"
+                                    >
+
+                                <?php } ?>
+
+ 
+
                             </div>
                             <!-- Name & Date -->
                             <div class="text-white ">

@@ -511,11 +511,9 @@ public function updatemembership()
 								
 								foreach ($get_data as $key => $image) {
 									
-									$html .= ' <a class="gl-thumb rounded-md overflow-hidden relative" href="'.base_url("uploads/".$image["image"]).'">
-												      <img src="'.base_url("uploads/".$image["image"]).'" alt="">
-												      <span class="absolute inset-0 bg-primary bg-opacity-70 opacity-0 transform scale-95 flex items-center justify-center">
-												         <span class="text-white"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-												            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+									$html .= ' <a class="gl-thumb rounded-md overflow-hidden relative h-48 block group" href="'.base_url("uploads/".$image["image"]).'">
+													      <img src="'.base_url("uploads/".$image["image"]).'" alt="" class="w-full h-full object-cover object-center transition duration-300 group-hover:scale-105">
+													      <span class="absolute inset-0 bg-primary/70 opacity-0 scale-95 flex items-center justify-center transition duration-300 group-hover:opacity-100 group-hover:scale-100">
 												          </svg></span>
 												      </span>
 												   </a>';
