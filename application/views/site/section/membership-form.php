@@ -95,20 +95,11 @@
                 <div class="relative sm:col-span-4 text-left">
                     <label for="" class="text-gray-600 font-semibold pb-1 px-2 block">District<em class="text-secondary">*</em>
                     </label>
-                  
-                     <select class="ring-0 border border-gray-300 rounded p-2 md:p-3 focus:outline-none outline-none focus:border-primary focus:placeholder-primary focus:text-primary w-full focus:ring-0" name="district">
-                    <?php $districts=get_All_data(array( 'status'=>'1') , $table='district' , 'name ASC' ); if($districts) { foreach ($districts as $key => $district) { ?>
-                    <option value="<?php echo $district['id']; ?>">
-                        <?php echo ucfirst($district['name']); ?> 
-                    </option> 
-                    <?php } } ?>
-                </select>
+                    <select class="district__name ring-0 border border-gray-300 rounded p-2 md:p-3 focus:outline-none outline-none focus:border-primary focus:placeholder-primary focus:text-primary w-full focus:ring-0" name="district" id="district"></select>
                 </div>
                 <div class="relative sm:col-span-4 text-left">
                     <label for="" class="text-gray-600 font-semibold pb-1 px-2 block">State</label>
-                    <select class="ring-0 border border-gray-300 rounded p-2 md:p-3 focus:outline-none outline-none focus:border-primary focus:placeholder-primary focus:text-primary w-full focus:ring-0 bg-gray-200"  name="state">
-                        <option value="1">Rajasthan</option>
-                    </select>
+                    <select class="ring-0 border border-gray-300 rounded p-2 md:p-3 focus:outline-none outline-none focus:border-primary focus:placeholder-primary focus:text-primary w-full focus:ring-0 bg-gray-200" id="state" name="state"></select>
                 </div>
             </div>
         </div>
@@ -178,21 +169,11 @@
             <div class="relative sm:col-span-4 text-left">
                 <label for="" class="text-gray-600 font-semibold pb-1 px-2 block">District<em class="text-secondary">*</em>
                 </label>
-          
-
-                 <select class="ring-0 border border-gray-300 rounded p-2 md:p-3 focus:outline-none outline-none focus:border-primary focus:placeholder-primary focus:text-primary w-full focus:ring-0" name="office_district">
-                    <?php $office_districts=get_All_data(array( 'status'=>'1') , $table='district' , 'name ASC' ); if($office_districts) { foreach ($office_districts as $key => $office_district) { ?>
-                    <option value="<?php echo $office_district['id']; ?>">
-                        <?php echo ucfirst($office_district['name']); ?> 
-                    </option> 
-                    <?php } } ?>
-                </select>
+                <select class="district__name ring-0 border border-gray-300 rounded p-2 md:p-3 focus:outline-none outline-none focus:border-primary focus:placeholder-primary focus:text-primary w-full focus:ring-0 district_list" name="office_district"></select>
             </div>
             <div class="relative sm:col-span-4 text-left">
                 <label for="" class="text-gray-600 font-semibold pb-1 px-2 block">State</label>
-                <select class="ring-0 border border-gray-300 rounded p-2 md:p-3 focus:outline-none outline-none focus:border-primary focus:placeholder-primary focus:text-primary w-full focus:ring-0 bg-gray-200" name="office_state">
-                    <option value="1">Rajasthan</option>
-                </select>
+                <select class="ring-0 border border-gray-300 rounded p-2 md:p-3 focus:outline-none outline-none focus:border-primary focus:placeholder-primary focus:text-primary w-full focus:ring-0 bg-gray-200" name="office_state" id="office_state"></select>
                 <input type="hidden" value="" id="state_id_hidden">
             </div>
         </div>
@@ -247,6 +228,8 @@
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script type = "text/javascript" >
+var districtSourceData = <?php echo json_encode(get_rajasthan_district_source_data()); ?>;
+
 var checkedMembership = $('input[name=membership_plan]:checked', '#register__form').data('id');
 var desc = $('input[name=membership_plan]:checked', '#register__form').data('desc');
 var membership_price_active = $('input[name=membership_plan]:checked', '#register__form').data('price');
@@ -266,7 +249,37 @@ $('body').on('change', '.membership_plan ', function() {
 });
 // Showing calender
 $('[data-toggle="datepicker"]').datepicker();
-// Get All State
+setRajasthanState();
+populateDistrictOptions(districtSourceData.districts);
+
+function setRajasthanState() {
+    var stateHtml = '<option value="Rajasthan" selected>Rajasthan</option>';
+    $('#state').html(stateHtml);
+    $('#office_state').html(stateHtml);
+    $('#state_id_hidden').val('Rajasthan');
+}
+
+function populateDistrictOptions(districts) {
+    console.log('District source data:', districtSourceData);
+    console.log('District list (final):', districts);
+    console.log('District list (CSV): ' + districts.join(', '));
+    console.table(districts);
+
+    var html = '';
+    for(var i = 0; i < districts.length; i++) {
+        if(districts[i] == 'Ajmer') {
+            html += '<option value="' + districts[i] + '" selected>' + districts[i] + '</option>';
+        } else {
+            html += '<option value="' + districts[i] + '">' + districts[i] + '</option>';
+        }
+    }
+
+    if(html === '') {
+        html = '<option value="">Please select district</option>';
+    }
+
+    $('.district__name').html(html);
+}
 
 </script> 
 <script type = "text/javascript" > $("#register__form").submit(function() {

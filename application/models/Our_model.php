@@ -3,8 +3,8 @@ class Our_model extends CI_Model {
 
     public function count_all_members($search='')
         {
-                $this->db->select('users.first_name , users.middle_name, users.last_name , users.post_name');
-                 $this->db->select('post_district.name as office_district');
+                $this->db->select('users.id, users.first_name , users.middle_name, users.last_name , users.post_name');
+                 $this->db->select('COALESCE(post_district.name, users.office_district) as office_district', false);
               $this->db->select('service.name as service_category');
                 if(!empty($search))
                 {
@@ -38,10 +38,12 @@ if (isset($name[2])) {
                                $this->db->like('post_name' , $search['post_name']);
                         }
 
-                        if (isset($search['post_distric']) && !empty($search['post_distric'])) {
-
-                               $this->db->like('office_district' , $search['post_distric'] , 'none');
-                        }
+                           if (isset($search['post_distric']) && !empty($search['post_distric'])) {
+                               $district = trim($search['post_distric']);
+                               $districtNormalized = strtolower(str_replace(array(' ', '-'), '', $district));
+                               $districtEscaped = $this->db->escape($districtNormalized);
+                               $this->db->where("(REPLACE(REPLACE(LOWER(post_district.name), '-', ''), ' ', '') = {$districtEscaped} OR REPLACE(REPLACE(LOWER(users.office_district), '-', ''), ' ', '') = {$districtEscaped})", null, false);
+                           }
                        
                 }
                 $this->db->where('users.role','User');
@@ -56,6 +58,7 @@ if (isset($name[2])) {
             $this->db->join('service', 'service.id = users.service_category', 'left');
             $this->db->join('user_membership', 'user_membership.user_id = users.id');
             $this->db->from('users');
+            $this->db->group_by('users.id');
 
                 $query = $this->db->get();
                 return  $query->num_rows();
@@ -63,8 +66,8 @@ if (isset($name[2])) {
 
          public function get_all_members($search='' , $limit , $offset)
         {
-                $this->db->select('users.first_name , users.middle_name, users.last_name , users.post_name,');
-                $this->db->select('post_district.name as office_district');
+                $this->db->select('users.id, users.first_name , users.middle_name, users.last_name , users.post_name,');
+                $this->db->select('COALESCE(post_district.name, users.office_district) as office_district', false);
                 $this->db->select('service.name as service_category');
 
                $this->db->where('users.role' , 'User');
@@ -107,9 +110,12 @@ if (isset($name[2])) {
                                $this->db->like('post_name' , $search['post_name']);
                         }
 
-                        if (isset($search['post_distric']) && !empty($search['post_distric'])) {
-                               $this->db->like('office_district' , $search['post_distric'] , 'none');
-                        }
+                           if (isset($search['post_distric']) && !empty($search['post_distric'])) {
+                               $district = trim($search['post_distric']);
+                               $districtNormalized = strtolower(str_replace(array(' ', '-'), '', $district));
+                               $districtEscaped = $this->db->escape($districtNormalized);
+                               $this->db->where("(REPLACE(REPLACE(LOWER(post_district.name), '-', ''), ' ', '') = {$districtEscaped} OR REPLACE(REPLACE(LOWER(users.office_district), '-', ''), ' ', '') = {$districtEscaped})", null, false);
+                           }
                        
                 }
              
@@ -118,6 +124,7 @@ if (isset($name[2])) {
                 $this->db->join('service', 'service.id = users.service_category', 'left');
                 ///$this->db->join('user_membership', 'user_membership.id = users.membership_id', 'right');
                 $this->db->join('user_membership', 'user_membership.user_id = users.id');
+                $this->db->group_by('users.id');
                  $this->db->limit($limit , $offset);
                 $this->db->order_by('users.id',  'DESC'); 
                 $query = $this->db->get();

@@ -217,6 +217,8 @@
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script type = "text/javascript" >
+var districtSourceData = <?php echo json_encode(get_rajasthan_district_source_data()); ?>;
+
 var checkedMembership = $('input[name=membership_plan]:checked', '#register__form').data('id');
 var desc = $('input[name=membership_plan]:checked', '#register__form').data('desc');
 var membership_price_active = $('input[name=membership_plan]:checked', '#register__form').val();
@@ -236,45 +238,37 @@ $('body').on('change', '.membership_plan ', function() {
 });
 // Showing calender
 $('[data-toggle="datepicker"]').datepicker();
-// Get All State
-state();
+setRajasthanState();
+populateDistrictOptions(districtSourceData.districts);
 
-function state() {
-    $.ajax({
-        url: 'https://cdn-api.co-vin.in/api/v2/admin/location/states',
-        dataType: "json",
-        success: function(data) {
-            var html = '';
-            for(var i = 0; i < data.states.length; i++) {
-                if(data.states[i].state_name == 'Rajasthan') {
-                    html += '<option value="' + data.states[i].state_name + '"  selected>' + data.states[i].state_name + '</option>';
-                    $('#state_id_hidden').val(data.states[i].state_id);
-                    districts(data.states[i].state_id);
-                }
-                $('#state').html(html);
-                $('#office_state').html(html);
-            }
-        }
-    });
+function setRajasthanState() {
+    var stateHtml = '<option value="Rajasthan" selected>Rajasthan</option>';
+    $('#state').html(stateHtml);
+    $('#office_state').html(stateHtml);
+    $('#state_id_hidden').val('Rajasthan');
 }
 
-function districts(stateid) {
-    $.ajax({
-        url: 'https://cdn-api.co-vin.in/api/v2/admin/location/districts/'+stateid,
-        dataType: "json",
-        success: function(data) {
-            var html = '';
-            for(var i = 0; i < data.districts.length; i++) {
-                if(data.districts[i].district_name == 'Ajmer') {
-                    html += '<option value="' + data.districts[i].district_name + '"  selected>' + data.districts[i].district_name + '</option>';
-                } else {
-                    html += '<option value="' + data.districts[i].district_name + '">' + data.districts[i].district_name + '</option>';
-                }
-            }
-            $('.district__name').html(html);
+function populateDistrictOptions(districts) {
+    console.log('District source data:', districtSourceData);
+    console.log('District list (final):', districts);
+    console.log('District list (CSV): ' + districts.join(', '));
+    console.table(districts);
+
+    var html = '';
+    for(var i = 0; i < districts.length; i++) {
+        if(districts[i] == 'Ajmer') {
+            html += '<option value="' + districts[i] + '" selected>' + districts[i] + '</option>';
+        } else {
+            html += '<option value="' + districts[i] + '">' + districts[i] + '</option>';
         }
-    });
-} 
+    }
+
+    if(html === '') {
+        html = '<option value="">Please select district</option>';
+    }
+
+    $('.district__name').html(html);
+}
 </script> 
 <script type = "text/javascript" > $("#register__form").submit(function() {
     event.preventDefault();

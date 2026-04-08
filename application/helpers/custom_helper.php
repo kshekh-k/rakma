@@ -489,6 +489,33 @@ if (!function_exists('get_order')) {
 	    }
 	}
 
+	if (!function_exists('get_rajasthan_district_source_data')) {
+	    function get_rajasthan_district_source_data() {
+	        return array(
+	            'source' => 'IGOD (igod.gov.in)',
+	            'state' => 'Rajasthan',
+	            'total_results' => 41,
+	            'last_verified' => 'April 2026',
+	            'districts' => array(
+	                'Ajmer', 'Alwar', 'Balotra', 'Banswara', 'Baran', 'Barmer', 'Beawar',
+	                'Bharatpur', 'Bhilwara', 'Bikaner', 'Bundi', 'Chittorgarh', 'Churu',
+	                'Dausa', 'Deeg', 'Dholpur', 'Didwana-Kuchaman', 'Dungarpur', 'Ganganagar',
+	                'Hanumangarh', 'Jaipur', 'Jaisalmer', 'Jalore', 'Jhalawar', 'Jhunjhunu',
+	                'Jodhpur', 'Karauli', 'Khairthal-Tijara', 'Kota', 'Kotputli-Behror',
+	                'Nagaur', 'Pali', 'Phalodi', 'Pratapgarh', 'Rajsamand', 'Salumbar',
+	                'Sawai Madhopur', 'Sikar', 'Sirohi', 'Tonk', 'Udaipur'
+	            )
+	        );
+	    }
+	}
+
+	if (!function_exists('get_rajasthan_districts')) {
+	    function get_rajasthan_districts() {
+	        $data = get_rajasthan_district_source_data();
+	        return isset($data['districts']) ? $data['districts'] : array();
+	    }
+	}
+
 }
 
 
