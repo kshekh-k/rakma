@@ -163,11 +163,23 @@
                                     <div class="form-group row">
                                         <label for="fname" class="col-sm-3 text-right control-label col-form-label">District</label>
                                         <div class="col-sm-9">
+                                              <?php
+                                                $districtSourceData = get_rajasthan_district_source_data();
+                                                $districtList = isset($districtSourceData['districts']) ? $districtSourceData['districts'] : array();
+
+                                                $selectedHomeDistrict = trim((string) $row['district']);
+                                                if (is_numeric($selectedHomeDistrict)) {
+                                                    $districtRow = get_data(array('id' => $selectedHomeDistrict), 'district');
+                                                    if (!empty($districtRow) && isset($districtRow[0]['name'])) {
+                                                        $selectedHomeDistrict = ucfirst($districtRow[0]['name']);
+                                                    }
+                                                }
+                                              ?>
                                               <select class="district__name form-control "  name="district" id="district">
                                                 <option value="">Select District</option>
-                                                 <?php $districts=get_All_data(array( 'status'=>'1') , $table='district' , 'name ASC' ); if($districts) { foreach ($districts as $key => $district) { ?>
-                                                        <option value="<?php echo $district['id']; ?>" <?php if($district['id']==$row['district']) { echo 'selected'; } ?>>
-                                                            <?php echo ucfirst($district['name']); ?> 
+                                                 <?php if($districtList) { foreach ($districtList as $districtName) { ?>
+                                                        <option value="<?php echo $districtName; ?>" <?php if(strtolower($districtName) == strtolower($selectedHomeDistrict)) { echo 'selected'; } ?>>
+                                                            <?php echo $districtName; ?>
                                                         </option> 
                                                         <?php } } ?>
                                               </select>
@@ -179,7 +191,7 @@
                                         <label for="fname" class="col-sm-3 text-right control-label col-form-label">State</label>
                                         <div class="col-sm-9">
                                             <select class="form-control"  name="state" >
-                                                  <option value="1">Rajasthan</option>
+                                                  <option value="Rajasthan" selected>Rajasthan</option>
                                             </select>
                                         </div>
                                     </div>
@@ -286,11 +298,20 @@
                                      <div class="form-group row">
                                         <label for="fname" class="col-sm-3 text-right control-label col-form-label">District</label>
                                         <div class="col-sm-9">
+                                            <?php
+                                                $selectedOfficeDistrict = trim((string) $row['office_district']);
+                                                if (is_numeric($selectedOfficeDistrict)) {
+                                                    $officeDistrictRow = get_data(array('id' => $selectedOfficeDistrict), 'district');
+                                                    if (!empty($officeDistrictRow) && isset($officeDistrictRow[0]['name'])) {
+                                                        $selectedOfficeDistrict = ucfirst($officeDistrictRow[0]['name']);
+                                                    }
+                                                }
+                                            ?>
                                             <select class="district__name1 form-control district_list1"  name="office_district">
                                                 <option value="">Select District</option>
-                                                 <?php $districts=get_All_data(array( 'status'=>'1') , $table='district' , 'name ASC' ); if($districts) { foreach ($districts as $key => $district) { ?>
-                                                        <option value="<?php echo $district['id']; ?>" <?php if($district['id']==$row['office_district']) { echo 'selected'; } ?>>
-                                                            <?php echo ucfirst($district['name']); ?> 
+                                                 <?php if($districtList) { foreach ($districtList as $districtName) { ?>
+                                                        <option value="<?php echo $districtName; ?>" <?php if(strtolower($districtName) == strtolower($selectedOfficeDistrict)) { echo 'selected'; } ?>>
+                                                            <?php echo $districtName; ?>
                                                         </option> 
                                                         <?php } } ?>
                                             </select>
@@ -302,7 +323,7 @@
                                         <label for="fname" class="col-sm-3 text-right control-label col-form-label">State</label>
                                         <div class="col-sm-9">
                                              <select class="form-control"  name="office_state" id="office_state" >
-                                                <option value="1">Rajasthan</option>
+                                                                <option value="Rajasthan" selected>Rajasthan</option>
                                              </select>
                                         </div>
                                     </div>
