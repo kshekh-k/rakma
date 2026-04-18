@@ -190,6 +190,40 @@ if (!function_exists('countdata')) {
 	}
 
 
+	if (!function_exists('normalize_input_text')) {
+	    function normalize_input_text($value = '') {
+				if ($value === null) {
+					return '';
+				}
+
+				if (is_array($value) || is_object($value)) {
+					return $value;
+				}
+
+				return preg_replace('/\s+/u', ' ', trim((string) $value));
+	    }
+	}
+
+
+	if (!function_exists('sanitize_member_identity_fields')) {
+	    function sanitize_member_identity_fields($data = array()) {
+				if (!is_array($data)) {
+					return $data;
+				}
+
+				$fields = array('first_name', 'middle_name', 'last_name', 'father_husband_name', 'ref_name');
+
+				foreach ($fields as $field) {
+					if (array_key_exists($field, $data)) {
+						$data[$field] = normalize_input_text($data[$field]);
+					}
+				}
+
+				return $data;
+	    }
+	}
+
+
 	if (!function_exists('default_member_image')) {
 	    function default_member_image($class ='') {
 				

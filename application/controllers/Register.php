@@ -26,7 +26,8 @@ echo $currentTime; die;
 
 	public function save()
 	{
-		
+		$_POST = sanitize_member_identity_fields($_POST);
+
 			
 		 	$date_now = date("Y-m-d"); // this format is string comparable
 
@@ -233,6 +234,8 @@ echo $currentTime; die;
 			(isset($_POST['userdata']) && !empty($_POST['userdata'])) &&
 			(isset($_POST['payment_id']) && !empty($_POST['payment_id']))
 		) {
+			$_POST['userdata'] = sanitize_member_identity_fields($_POST['userdata']);
+
 			$_POST['userdata']['membership_id'] =  $_POST['membership_id'];
 			$_POST['userdata']['membership_price'] =  $_POST['membership_price'];
 			$_POST['userdata']['ref_name'] =  $_POST['ref_name'];

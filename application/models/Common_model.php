@@ -75,9 +75,9 @@ class Common_model extends CI_Model {
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                // $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
                  // $this->db->select('state.name as state');
-                 // $this->db->select('district.name as district');
-                 // $this->db->select('office_state.name as office_state');
-                 // $this->db->select('post_district.name as office_district');
+                 $this->db->select('district.name as district');
+                 //$this->db->select('office_state.name as office_state');
+                 $this->db->select('post_district.name as office_district');
                  
                 $this->db->where('users.role' , 'User');
                 $this->db->join('users as r', 'r.phone = users.ref_mobile', 'left');
@@ -87,9 +87,9 @@ class Common_model extends CI_Model {
                 $this->db->join('membership', 'membership.id = user_membership.membership_id', 'left');
               //  $this->db->join('transaction', 'transaction.payment_id = users.payment_id', 'left');
                 // $this->db->join('state', 'state.id = users.state', 'left');
-                // $this->db->join('district', 'district.id = users.district', 'left');
+                $this->db->join('district', 'district.id = users.district', 'left');
                 // $this->db->join('state as office_state', 'office_state.id = users.office_state', 'left');
-                // $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
+                $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
 
                 $this->db->from('users');
 
@@ -350,12 +350,20 @@ class Common_model extends CI_Model {
 
         public function insert($table,$data)
         {
+                if (strtolower($table) === 'users' && is_array($data)) {
+                        $data = sanitize_member_identity_fields($data);
+                }
+
                 $this->db->insert($table, $data);
                  return $this->db->insert_id();
         }
 
         public function update($id='' , $data = '' , $table='')
         {
+                if (strtolower($table) === 'users' && is_array($data)) {
+                        $data = sanitize_member_identity_fields($data);
+                }
+
                 $this->db->update($table, $data, 'id='.$id);
                   return  $this->db->affected_rows();
         }
