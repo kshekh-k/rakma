@@ -151,7 +151,9 @@ if (isset($name[2])) {
                 $this->db->join('user_membership', 'user_membership.user_id = users.id');
                // $this->db->join('user_membership', 'user_membership.id = users.membership_id', 'left');
                 // $this->db->limit($limit , $offset);
-                $this->db->order_by('users.id',  'DESC'); 
+                $this->db->order_by('users.first_name', 'ASC');
+                $this->db->order_by('users.middle_name', 'ASC');
+                $this->db->order_by('users.last_name', 'ASC');
                 $query = $this->db->get();
 
                // echo '<pre>'; print_r($query->result_array()); die;
