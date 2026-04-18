@@ -2,8 +2,8 @@
    <div class="max-w-screen-lg xl:max-w-screen-xl px-4 xl:px-12 mx-auto">
 <form id="member__filter__form">
 <div class="form-list flex">
-    <div class="form-field field-name"><input type="text" name="name" id="m_name" placeholder="Name" class="border border-gray-300 rounded py-3 px-4 focus:outline-none outline-none ring-0 focus:ring-0 focus:border-secondary focus:placeholder-secondary focus:text-secondary w-full "></div>
-    <div class="form-field field-post"><input type="text" name="post_type" id="m_post_name" placeholder="Post name" class="border border-gray-300 rounded py-3 px-4 focus:outline-none outline-none ring-0 focus:ring-0 focus:border-secondary focus:placeholder-secondary focus:text-secondary w-full"></div>
+   <div class="form-field field-name"><input type="text" name="name" id="m_name" placeholder="Name" class="border border-gray-300 rounded py-3 px-4 focus:outline-none outline-none ring-0 focus:ring-0 focus:border-secondary focus:placeholder-secondary focus:text-secondary w-full"></div>
+   <div class="form-field field-post"><input type="text" name="post_type" id="m_post_name" placeholder="Post name" class="border border-gray-300 rounded py-3 px-4 focus:outline-none outline-none ring-0 focus:ring-0 focus:border-secondary focus:placeholder-secondary focus:text-secondary w-full"></div>
    <div class="form-field field-district"><select class="form-control border border-gray-300 rounded  py-3 px-4 focus:outline-none outline-none ring-0 focus:ring-0 focus:border-secondary w-full " name="district" id="m_post_distric">
    <option value="">Select District</option>
 </select></div>
