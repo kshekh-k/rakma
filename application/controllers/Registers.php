@@ -23,6 +23,8 @@ class Registers extends CI_Controller {
 
 	public function save()
 	{	/*echo '<pre>'; print_r($_POST); die;*/
+		$_POST = sanitize_member_identity_fields($_POST);
+
 		$output = array();
 		$output['status'] = false;
 		$output['data'] = '';
@@ -157,6 +159,8 @@ class Registers extends CI_Controller {
 			(isset($_POST['userdata']) && !empty($_POST['userdata'])) &&
 			(isset($_POST['payment_id']) && !empty($_POST['payment_id']))
 		) {
+			$_POST['userdata'] = sanitize_member_identity_fields($_POST['userdata']);
+
 			$_POST['userdata']['membership_id'] =  $_POST['membership_id'];
 			$_POST['userdata']['membership_price'] =  $_POST['membership_price'];
 			$_POST['userdata']['ref_name'] =  $_POST['ref_name'];

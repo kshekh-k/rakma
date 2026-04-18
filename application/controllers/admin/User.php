@@ -459,6 +459,7 @@ public function update($id = '')
 	{
 		
 		if (isset($_POST) || isset($_FILES)) {
+			$_POST = sanitize_member_identity_fields($_POST);
 
 			$error = '';
 
