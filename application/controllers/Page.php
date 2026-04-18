@@ -871,6 +871,95 @@ $get_data =	$this->common->getAllRecordsByFieldName(array('gallery_id' => $_POST
     }
 
 
+	public function ajax_permanent_member_list()
+	{
+		$output = [];
+		$output['status'] = false;
+		$output['data'] = '';
+
+		if(isset($_POST['page']))
+		{
+		if (!empty($_POST['page']) && is_numeric($_POST['page'])) {
+			$pagenumber = $_POST['page'];
+		}else
+		{
+			$pagenumber = 0;
+		}
+
+		$searchArr = array();
+		$searchArr['name'] = $_POST['name'];
+		$searchArr['post_name'] = $_POST['post_name'];
+		$searchArr['post_distric'] = $_POST['post_distric'];
+
+
+		$this->load->library("pagination");
+		$per_page = 50;
+		  if($pagenumber > 0)
+		{
+			$page = ($pagenumber - 1) * $per_page;
+			$serial_number = $pagenumber * $per_page - $per_page+1;
+
+		}else
+		{
+			$page = 0;
+			$serial_number = 1;
+		}
+
+
+		$total_rows = $this->ourmember->count_all_permanent_members($searchArr);
+		$config = [];
+		$config["base_url"] = base_url('/page/ajax_permanent_member_list');
+		$config["total_rows"] = $total_rows;
+		$config["per_page"] = $per_page;
+
+		$config['use_page_numbers'] = true;
+		$config['num_links'] = 1;
+		$config["uri_segment"] = 3;
+		$config["display_pages"] = true;
+		$config['cur_page'] = $pagenumber;
+
+		$config['num_tag_open'] = '<li class="relative inline-flex items-center border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-200">';
+		$config['num_tag_close'] = '</li>';
+
+		$config['cur_tag_open'] = '<li class="relative inline-flex items-center border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-200 active"><a href="javascript:void(0);">';
+		$config['cur_tag_close'] = '</a></li>';
+
+		$config['next_link'] = ' <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+			 <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>';
+
+		$config['prev_link'] = '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+			 <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>';
+
+
+		$config['next_tag_open'] = '<li class="pg-next relative inline-flex items-center  border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-200">';
+		$config['next_tag_close'] = '</li>';
+
+		$config['prev_tag_open'] = '<li class="pg-prev relative inline-flex items-center border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-200">';
+		$config['prev_tag_close'] = '</li>';
+
+		$config['first_tag_open'] = '<li class="relative inline-flex items-center border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-200">';
+		$config['first_tag_close'] = '</li>';
+
+		$config['last_tag_open'] = '<li class="relative inline-flex items-center border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-200">';
+		 $config['last_tag_close'] = '</li>';
+
+
+
+		$this->pagination->initialize($config);
+
+
+		$data['rows'] = $this->ourmember->get_all_permanent_members($searchArr , $per_page, $page);
+		$data['count'] = $serial_number;
+		$data['total_rows'] =  $total_rows;
+		$output['data'] = $this->load->view('site/section/ajax_member', $data , true);
+		$output['status'] = true;
+
+		}
+
+		 echo json_encode($output);
+	}
+
+
 
 
 

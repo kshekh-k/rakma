@@ -8,10 +8,11 @@
       <th style="width: 25%;">Post Name</th>
       <th style="width: 25%;">Service Category</th>
    </tr>
+   <tbody class="capitalize">
    <?php  if ($rows) { foreach ($rows as $key => $value) {?>
    <tr>
       <td><?php echo $count; ?></td>
-      <td><?php echo $value['first_name']; ?> <?php echo $value['middle_name']; ?> <?php echo $value['last_name']; ?></td>
+      <td><?php echo format_member_full_name($value['first_name'], $value['middle_name'], $value['last_name']); ?></td>
       <td><?php echo $value['office_district']; ?></td>
       <td><?php echo $value['post_name']; ?></td>
       <td><?php echo $value['service_category']; ?></td>
@@ -21,6 +22,7 @@
    		<td colspan="5">Data not found</td>
    	</tr>
    <?php } ?>
+   </tbody>
 </table>
    </div>
 <ul class="relative z-0 inline-flex -space-x-px pagination" aria-label="Pagination" id="pagination">

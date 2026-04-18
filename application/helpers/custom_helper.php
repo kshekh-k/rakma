@@ -224,6 +224,28 @@ if (!function_exists('countdata')) {
 	}
 
 
+	if (!function_exists('format_member_full_name')) {
+	    function format_member_full_name($firstName = '', $middleName = '', $lastName = '') {
+				$parts = array_filter(array($firstName, $middleName, $lastName), function ($value) {
+					return trim((string) $value) !== '';
+				});
+
+				$fullName = implode(' ', $parts);
+				$fullName = normalize_input_text($fullName);
+
+				if ($fullName === '') {
+					return '';
+				}
+
+				if (function_exists('mb_convert_case')) {
+					return mb_convert_case(mb_strtolower($fullName, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+				}
+
+				return ucwords(strtolower($fullName));
+	    }
+	}
+
+
 	if (!function_exists('default_member_image')) {
 	    function default_member_image($class ='') {
 				
