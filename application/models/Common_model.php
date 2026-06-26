@@ -15,16 +15,29 @@ class Common_model extends CI_Model {
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                 $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
                  $this->db->select('state.name as state');
-                 $this->db->select('district.name as district');
+                //  $this->db->select('district.name as district');
+                $this->db->select("
+                CASE 
+                WHEN users.district REGEXP '^[0-9]+$' THEN district.name
+                ELSE users.district
+                END AS district
+                ", false);
                  $this->db->select('office_state.name as office_state');
-                 $this->db->select('post_district.name as office_district');
+                //  $this->db->select('post_district.name as office_district');
+                $this->db->select("
+                CASE 
+                WHEN users.office_district REGEXP '^[0-9]+$' THEN post_district.name
+                ELSE users.office_district
+                END AS office_district
+                ", false);
                  if(!empty($id))
                 {
                          $this->db->where('users.id' , $id);
                 }
     
-                 $this->db->where('users.role','user');
+                $this->db->where('users.role','User');
                 $this->db->where('user_membership.type','Lifetime');
+                $this->db->where('user_membership.membership_status','Active');
                 // $this->db->where('users.verify','1');
              
 
@@ -33,7 +46,8 @@ class Common_model extends CI_Model {
                 $this->db->join('users as r', 'r.phone = users.ref_mobile', 'left');
                 $this->db->join('department', 'department.id = users.name_of_diparment', 'left');
                 $this->db->join('service', 'service.id = users.service_category', 'left');
-                $this->db->join('user_membership', 'user_membership.user_id = users.id', 'left');
+                $this->db->join('user_membership', 'user_membership.id = users.membership_id', 'left');
+               // $this->db->join('user_membership', 'user_membership.user_id = users.id', 'left');
                // $this->db->join('user_membership', 'user_membership.id = users.membership_id', 'left');
                 $this->db->join('membership', 'membership.id = user_membership.membership_id', 'left');
                 $this->db->join('transaction', 'transaction.payment_id = users.payment_id', 'left');
@@ -75,10 +89,20 @@ class Common_model extends CI_Model {
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                // $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
                  // $this->db->select('state.name as state');
-                 $this->db->select('district.name as district');
-                 //$this->db->select('office_state.name as office_state');
-                 $this->db->select('post_district.name as office_district');
-                 
+                 $this->db->select("
+                CASE
+                WHEN users.district REGEXP '^[0-9]+$' THEN district.name
+                ELSE users.district
+                END as district
+                ", false);
+                                //$this->db->select('office_state.name as office_state');
+                                $this->db->select("
+                CASE
+                WHEN users.office_district REGEXP '^[0-9]+$' THEN post_district.name
+                ELSE users.office_district
+                END as office_district
+                ", false);
+
                 $this->db->where('users.role' , 'User');
                 $this->db->join('users as r', 'r.phone = users.ref_mobile', 'left');
                 $this->db->join('department', 'department.id = users.name_of_diparment', 'left');
@@ -118,23 +142,35 @@ class Common_model extends CI_Model {
                 $this->db->select('user_membership.price as m_price , user_membership.membership_status ,user_membership.id as user_membership_id , user_membership.type as m_type');
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                 $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
-                 $this->db->select('state.name as state');
-                 $this->db->select('district.name as district');
-                 $this->db->select('office_state.name as office_state');
-                 $this->db->select('post_district.name as office_district');
+                $this->db->select('state.name as state');
+                $this->db->select("
+                        CASE
+                        WHEN users.district REGEXP '^[0-9]+$' THEN district.name
+                        ELSE users.district
+                        END as district
+                        ", false);
+                $this->db->select('office_state.name as office_state');
+                $this->db->select("
+                        CASE
+                        WHEN users.office_district REGEXP '^[0-9]+$' THEN post_district.name
+                        ELSE users.office_district
+                        END as office_district
+                        ", false);
                  if(!empty($id))
                 {
-                         $this->db->where('users.id' , $id);
+                        $this->db->where('users.id' , $id);
                 }
-   
+
                 $this->db->where('users.role' , 'User');
                // $this->db->where('user_membership.type !=', 'Lifetime');
                 $this->db->where_in('user_membership.type', ['Join','Upgrade']);
+                $this->db->where('user_membership.membership_status','Active');
 
                 $this->db->join('users as r', 'r.phone = users.ref_mobile', 'left');
                 $this->db->join('department', 'department.id = users.name_of_diparment', 'left');
                 $this->db->join('service', 'service.id = users.service_category', 'left');
-                $this->db->join('user_membership', 'user_membership.user_id = users.id');
+                $this->db->join('user_membership', 'user_membership.id = users.membership_id');
+                //$this->db->join('user_membership', 'user_membership.user_id = users.id');
                 //$this->db->join('user_membership', 'user_membership.id = users.membership_id', 'left');
                 $this->db->join('membership', 'membership.id = user_membership.membership_id', 'left');
                 $this->db->join('transaction', 'transaction.payment_id = users.payment_id', 'left');
@@ -176,9 +212,19 @@ class Common_model extends CI_Model {
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                 $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
                   $this->db->select('state.name as state');
-                 $this->db->select('district.name as district');
+                 $this->db->select("
+CASE
+    WHEN users.district REGEXP '^[0-9]+$' THEN district.name
+    ELSE users.district
+END as district
+", false);
                  $this->db->select('office_state.name as office_state');
-                 $this->db->select('post_district.name as office_district');
+                 $this->db->select("
+CASE
+    WHEN users.office_district REGEXP '^[0-9]+$' THEN post_district.name
+    ELSE users.office_district
+END as office_district
+", false);
                  if(!empty($where))
                 {
                          $this->db->where($where);
@@ -196,7 +242,7 @@ class Common_model extends CI_Model {
                 $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
                 $this->db->from('users');
 
-                $this->db->order_by('users.id',  'DESC'); 
+                $this->db->order_by('users.id',  'DESC');
 
                 $query = $this->db->get();
                 $result =  $query->result_array();
@@ -215,9 +261,19 @@ class Common_model extends CI_Model {
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                 $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
                   $this->db->select('state.name as state');
-                 $this->db->select('district.name as district');
+                 $this->db->select("
+CASE
+    WHEN users.district REGEXP '^[0-9]+$' THEN district.name
+    ELSE users.district
+END as district_name
+", false);
                  $this->db->select('office_state.name as office_state');
-                 $this->db->select('post_district.name as office_district');
+                 $this->db->select("
+CASE
+    WHEN users.office_district REGEXP '^[0-9]+$' THEN post_district.name
+    ELSE users.office_district
+END as office_district_name
+", false);
                  if(!empty($where))
                 {
                          $this->db->where($where);
@@ -235,7 +291,7 @@ class Common_model extends CI_Model {
                 $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
                 $this->db->from('users');
 
-                $this->db->order_by('users.id',  'DESC'); 
+                $this->db->order_by('users.id',  'DESC');
 
                 $query = $this->db->get();
                 $result =  $query->row_array();
@@ -589,8 +645,13 @@ class Common_model extends CI_Model {
             public function count_all_members($search='')
         {
                 $this->db->select('users.*');
-                 $this->db->select('post_district.name as office_district');
-              $this->db->select('service.name as service_category');
+                $this->db->select("
+CASE
+    WHEN users.office_district REGEXP '^[0-9]+$' THEN post_district.name
+    ELSE users.office_district
+END as office_district
+", false);
+                $this->db->select('service.name as service_category');
                 if(!empty($search))
                 {
                        /* $name =  explode(' ', $search['name']);
@@ -604,7 +665,20 @@ class Common_model extends CI_Model {
                                $this->db->like('last_name' , $name[2]);
                         }*/
                         if (isset($search['district']) && !empty($search['district'])) {
-                               $this->db->where('users.district' , $search['district']);
+                               $dist_val = $search['district'];
+                               if (is_numeric($dist_val)) {
+                                   $dist_row = $this->db->query("SELECT name FROM district WHERE id = ?", [$dist_val])->row_array();
+                                   $dist_other = $dist_row ? $dist_row['name'] : null;
+                               } else {
+                                   $dist_row = $this->db->query("SELECT id FROM district WHERE name = ?", [$dist_val])->row_array();
+                                   $dist_other = $dist_row ? (int)$dist_row['id'] : null;
+                               }
+                               $this->db->group_start();
+                               $this->db->where('users.district', $dist_val);
+                               if ($dist_other) {
+                                   $this->db->or_where('users.district', $dist_other);
+                               }
+                               $this->db->group_end();
                         }
 
                          if (isset($search['post_type']) && !empty($search['post_type'])) {
@@ -620,10 +694,23 @@ class Common_model extends CI_Model {
                         }
 
                          if (isset($search['post_district']) && !empty($search['post_district'])) {
-                               $this->db->where('users.office_district' , $search['post_district']);
+                               $post_dist_val = $search['post_district'];
+                               if (is_numeric($post_dist_val)) {
+                                   $post_dist_row = $this->db->query("SELECT name FROM district WHERE id = ?", [$post_dist_val])->row_array();
+                                   $post_dist_other = $post_dist_row ? $post_dist_row['name'] : null;
+                               } else {
+                                   $post_dist_row = $this->db->query("SELECT id FROM district WHERE name = ?", [$post_dist_val])->row_array();
+                                   $post_dist_other = $post_dist_row ? (int)$post_dist_row['id'] : null;
+                               }
+                               $this->db->group_start();
+                               $this->db->where('users.office_district', $post_dist_val);
+                               if ($post_dist_other) {
+                                   $this->db->or_where('users.office_district', $post_dist_other);
+                               }
+                               $this->db->group_end();
                         }
 
-                        
+
 
                          if (isset($search['ref_number']) && !empty($search['ref_number'])) {
                                $this->db->where('users.ref_mobile' , $search['ref_number']);
@@ -636,9 +723,9 @@ class Common_model extends CI_Model {
                      /*   if (isset($search['post_distric']) && !empty($search['post_distric'])) {
                                $this->db->like('office_district' , $search['post_distric'] , 'none');
                         }*/
-                       
+
                 }
-                $this->db->where('role','user');
+                $this->db->where('users.role', 'User');
                 $this->db->from('users');
                  $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
                   $this->db->join('service', 'service.id = users.service_category', 'left');
@@ -658,9 +745,19 @@ class Common_model extends CI_Model {
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                 $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
                  $this->db->select('state.name as state');
-                 $this->db->select('district.name as district');
+                 $this->db->select("
+CASE
+    WHEN users.district REGEXP '^[0-9]+$' THEN district.name
+    ELSE users.district
+END as district
+", false);
                  $this->db->select('office_state.name as office_state');
-                 $this->db->select('post_district.name as office_district');
+                 $this->db->select("
+CASE
+    WHEN users.office_district REGEXP '^[0-9]+$' THEN post_district.name
+    ELSE users.office_district
+END as office_district
+", false);
                  if(!empty($search))
                 {
                        /* $name =  explode(' ', $search['name']);
@@ -674,7 +771,20 @@ class Common_model extends CI_Model {
                                $this->db->like('last_name' , $name[2]);
                         }*/
                          if (isset($search['district']) && !empty($search['district'])) {
-                               $this->db->where('users.district' , $search['district']);
+                               $dist_val = $search['district'];
+                               if (is_numeric($dist_val)) {
+                                   $dist_row = $this->db->query("SELECT name FROM district WHERE id = ?", [$dist_val])->row_array();
+                                   $dist_other = $dist_row ? $dist_row['name'] : null;
+                               } else {
+                                   $dist_row = $this->db->query("SELECT id FROM district WHERE name = ?", [$dist_val])->row_array();
+                                   $dist_other = $dist_row ? (int)$dist_row['id'] : null;
+                               }
+                               $this->db->group_start();
+                               $this->db->where('users.district', $dist_val);
+                               if ($dist_other) {
+                                   $this->db->or_where('users.district', $dist_other);
+                               }
+                               $this->db->group_end();
                         }
 
                          if (isset($search['post_type']) && !empty($search['post_type'])) {
@@ -690,10 +800,23 @@ class Common_model extends CI_Model {
                         }
 
                          if (isset($search['post_district']) && !empty($search['post_district'])) {
-                               $this->db->where('users.office_district' , $search['post_district']);
+                               $post_dist_val = $search['post_district'];
+                               if (is_numeric($post_dist_val)) {
+                                   $post_dist_row = $this->db->query("SELECT name FROM district WHERE id = ?", [$post_dist_val])->row_array();
+                                   $post_dist_other = $post_dist_row ? $post_dist_row['name'] : null;
+                               } else {
+                                   $post_dist_row = $this->db->query("SELECT id FROM district WHERE name = ?", [$post_dist_val])->row_array();
+                                   $post_dist_other = $post_dist_row ? (int)$post_dist_row['id'] : null;
+                               }
+                               $this->db->group_start();
+                               $this->db->where('users.office_district', $post_dist_val);
+                               if ($post_dist_other) {
+                                   $this->db->or_where('users.office_district', $post_dist_other);
+                               }
+                               $this->db->group_end();
                         }
 
-                        
+
 
                          if (isset($search['ref_number']) && !empty($search['ref_number'])) {
                                $this->db->where('users.ref_mobile' , $search['ref_number']);
@@ -703,9 +826,9 @@ class Common_model extends CI_Model {
                                $this->db->like('users.post_name' , $search['post_name']);
                         }
 
-                       
+
                 }
-   
+
                 $this->db->where('users.role' , 'User');
                 $this->db->join('users as r', 'r.phone = users.ref_mobile', 'left');
                 $this->db->join('department', 'department.id = users.name_of_diparment', 'left');
@@ -762,15 +885,35 @@ class Common_model extends CI_Model {
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                 $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
                  $this->db->select('state.name as state');
-                 $this->db->select('district.name as district');
+                //  $this->db->select('district.name as district');
+                //  $this->db->select('post_district.name as office_district');
+
+
+                $this->db->select("
+                CASE
+                WHEN users.district REGEXP '^[0-9]+$' THEN district.name
+                ELSE users.district
+                END as district
+                ", false);
+
+                $this->db->select("
+                CASE
+                WHEN users.office_district REGEXP '^[0-9]+$' THEN post_district.name
+                ELSE users.office_district
+                END as office_district
+                ", false);
+
+
+
                  $this->db->select('office_state.name as office_state');
-                 $this->db->select('post_district.name as office_district');
+                 
                  if(!empty($id))
                 {
                          $this->db->where('users.id' , $id);
                 }
    
                 $this->db->where('users.role' , 'User');
+                $this->db->where("(user_membership.membership_status = 'Active' OR user_membership.membership_status IS NULL)", NULL, FALSE);
                 $this->db->join('users as r', 'r.phone = users.ref_mobile', 'left');
                 $this->db->join('department', 'department.id = users.name_of_diparment', 'left');
                 $this->db->join('service', 'service.id = users.service_category', 'left');
@@ -785,12 +928,12 @@ class Common_model extends CI_Model {
 
                 $this->db->from('users');
 
-                $this->db->order_by('users.id',  'DESC'); 
-               
+                $this->db->order_by('users.id',  'DESC');
+
 
                  if(empty($id))
                 {
-                      //$this->db->limit(100); 
+                      //$this->db->limit(100);
                        $query = $this->db->get();
                         $result =  $query->result_array();
                 }else
@@ -800,7 +943,7 @@ class Common_model extends CI_Model {
                 }
 
 
-             
+
                 return $result;
 
         }

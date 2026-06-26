@@ -169,6 +169,21 @@ function payment() {
                 success: function(data) {
                     $('#upgraded__result').empty();
                     $('#payment_alert_message').html(data.data);
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error");
+                    console.log("Status:", status);
+                    console.log("Error:", error);
+                    console.log("Response:", xhr.responseText);
+
+                    $('#payment_alert_message').html(
+                        '<div class="alert alert-danger">' +
+                        'Payment successful but membership upgrade failed. Please contact admin.' +
+                        '</div>'
+                    );
+                },
+                complete: function() {
+                    console.log("Membership upgrade request completed.");
                 }
             });
         },

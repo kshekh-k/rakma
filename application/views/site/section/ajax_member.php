@@ -4,7 +4,7 @@
    <tr>
       <th style="width: 10%;">S.NO</th>
       <th style="width: 40%;">Name</th>
-      <th style="width: 25%;">Post Distric</th>
+      <th style="width: 25%;">Post District</th>
       <th style="width: 25%;">Post Name</th>
       <th style="width: 25%;">Service Category</th>
    </tr>

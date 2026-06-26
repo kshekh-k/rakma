@@ -236,7 +236,9 @@ echo $currentTime; die;
 		) {
 			$_POST['userdata'] = sanitize_member_identity_fields($_POST['userdata']);
 
-			$_POST['userdata']['membership_id'] =  $_POST['membership_id'];
+			// Do NOT set membership_id here — it must point to user_membership.id,
+			// which does not exist yet. It is set below after user_membership is inserted.
+			unset($_POST['userdata']['membership_id']);
 			$_POST['userdata']['membership_price'] =  $_POST['membership_price'];
 			$_POST['userdata']['ref_name'] =  $_POST['ref_name'];
 			$_POST['userdata']['ref_mobile'] =  $_POST['ref_mobile'];
@@ -244,7 +246,7 @@ echo $currentTime; die;
 			$_POST['userdata']['status'] =   '1';
 			$_POST['userdata']['verify'] =  ($_POST['membership_id'] == 3) ? '0' : '1';
 			$_POST['userdata']['membership_join_date'] =  date('Y-m-d h:m:s');
-		
+
 			$insert_id = $this->common->insert('users' ,  $_POST['userdata']);
 
 			if($insert_id)

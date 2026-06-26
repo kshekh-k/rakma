@@ -58,10 +58,11 @@ class Our_model extends CI_Model {
                  //$this->db->where('user_membership.type !=','Lifetime');
 
             $this->db->where_in('user_membership.type', ['Join','Upgrade']);
+            $this->db->where('user_membership.membership_status', 'Active');
 
             $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
             $this->db->join('service', 'service.id = users.service_category', 'left');
-            $this->db->join('user_membership', 'user_membership.user_id = users.id');
+            $this->db->join('user_membership', 'user_membership.id = users.membership_id', 'left');
             $this->db->from('users');
             $this->db->group_by('users.id');
 
@@ -82,14 +83,14 @@ class Our_model extends CI_Model {
               //  $this->db->where('users.verify !=', '2');
                //  $this->db->where('user_membership.type !=','Lifetime');
                   $this->db->where_in('user_membership.type', ['Join','Upgrade']);
+                  $this->db->where('user_membership.membership_status', 'Active');
 
                 $this->apply_member_list_filters($search);
-             
+
                 $this->db->from('users');
                 $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
                 $this->db->join('service', 'service.id = users.service_category', 'left');
-                ///$this->db->join('user_membership', 'user_membership.id = users.membership_id', 'right');
-                $this->db->join('user_membership', 'user_membership.user_id = users.id');
+                $this->db->join('user_membership', 'user_membership.id = users.membership_id', 'left');
                 $this->db->group_by('users.id');
                  $this->db->limit($limit , $offset);
                 $this->db->order_by('users.first_name', 'ASC');
@@ -106,12 +107,13 @@ class Our_model extends CI_Model {
                 $this->db->select('COALESCE(post_district.name, users.office_district) as office_district', false);
                 $this->db->select('service.name as service_category');
                 $this->apply_member_list_filters($search);
-                $this->db->where('users.role', 'user');
+                $this->db->where('users.role', 'User');
                 $this->db->where('user_membership.type', 'Lifetime');
+                $this->db->where('user_membership.membership_status', 'Active');
                 $this->db->where('users.verify', '1');
                 $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
                 $this->db->join('service', 'service.id = users.service_category', 'left');
-                $this->db->join('user_membership', 'user_membership.user_id = users.id');
+                $this->db->join('user_membership', 'user_membership.id = users.membership_id', 'left');
                 $this->db->from('users');
                 $this->db->group_by('users.id');
 
@@ -125,14 +127,15 @@ class Our_model extends CI_Model {
                 $this->db->select('users.id, users.first_name , users.middle_name, users.last_name , users.post_name,');
                 $this->db->select('COALESCE(post_district.name, users.office_district) as office_district', false);
                 $this->db->select('service.name as service_category');
-                $this->db->where('users.role', 'user');
+                $this->db->where('users.role', 'User');
                 $this->db->where('user_membership.type', 'Lifetime');
+                $this->db->where('user_membership.membership_status', 'Active');
                 $this->db->where('users.verify', '1');
                 $this->apply_member_list_filters($search);
                 $this->db->from('users');
                 $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
                 $this->db->join('service', 'service.id = users.service_category', 'left');
-                $this->db->join('user_membership', 'user_membership.user_id = users.id');
+                $this->db->join('user_membership', 'user_membership.id = users.membership_id', 'left');
                 $this->db->group_by('users.id');
                 $this->db->limit($limit , $offset);
                 $this->db->order_by('users.first_name', 'ASC');
@@ -146,26 +149,24 @@ class Our_model extends CI_Model {
          public function get_all_pwemanentmembers()
         {
                 $this->db->select('users.first_name , users.middle_name, users.last_name , users.post_name,');
-                $this->db->select('post_district.name as office_district');
+                $this->db->select('COALESCE(post_district.name, users.office_district) as office_district', false);
                 $this->db->select('service.name as service_category');
                 $this->db->select('user_membership.type as membership_type');
 
-                $this->db->where('users.role','user');
+                $this->db->where('users.role','User');
                 $this->db->where('user_membership.type','Lifetime');
+                $this->db->where('user_membership.membership_status','Active');
                  $this->db->where('users.verify','1');
-                 
+
                  $this->db->from('users');
                 $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
                 $this->db->join('service', 'service.id = users.service_category', 'left');
-                $this->db->join('user_membership', 'user_membership.user_id = users.id');
-               // $this->db->join('user_membership', 'user_membership.id = users.membership_id', 'left');
-                // $this->db->limit($limit , $offset);
+                $this->db->join('user_membership', 'user_membership.id = users.membership_id', 'left');
                 $this->db->order_by('users.first_name', 'ASC');
                 $this->db->order_by('users.middle_name', 'ASC');
                 $this->db->order_by('users.last_name', 'ASC');
                 $query = $this->db->get();
 
-               // echo '<pre>'; print_r($query->result_array()); die;
                 return $query->result_array();
         }
 
