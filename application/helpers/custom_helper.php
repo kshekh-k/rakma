@@ -313,7 +313,8 @@ if (!function_exists('countdata')) {
 
 	if (!function_exists('pdf')) {
 	function pdf($html = '',  $pdftpye = '' , $filename= '')
-	{
+	{ 
+		 log_message('error', 'PDF HELPER CALLED');
 		if ($html) {
 			require(APPPATH.'third_party/vendor/autoload.php');
 			$mpdf = new \Mpdf\Mpdf([
@@ -326,7 +327,8 @@ if (!function_exists('countdata')) {
 			$mpdf->autoScriptToLang = true;
 			$mpdf->autoLangToFont = true;
 			$mpdf->WriteHTML($html);
-			$file = $filename.'/'.time().'.pdf';
+			//$mpdf->WriteHTML($html);
+			$file = $filename . '_' . time() . '.pdf';			 
 			if ($pdftpye) {
 				$mpdf->output($file,'D');
 			}else
@@ -507,12 +509,13 @@ if (!function_exists('get_order')) {
 					}else
 					{
 						$res = json_decode($result, true);
-						if(isset($res['status']) && $res['status'] == 'authorized')
-						{
-							$return =$res;
-						}else
-						{
-							 $return =  false;
+						if (
+							isset($res['status']) &&
+							in_array($res['status'], ['authorized', 'captured'])
+						) {
+							$return = $res;
+						} else {
+							$return = false;
 						}
 					  
 					}
@@ -573,5 +576,3 @@ if (!function_exists('get_order')) {
 	}
 
 }
-
-

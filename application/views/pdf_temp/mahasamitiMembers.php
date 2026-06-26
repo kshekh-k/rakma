@@ -13,7 +13,7 @@
 				  <!--Logo/Header-->
 				 <table border="0" cellpadding="0" cellspacing="0" >
 	  			<tr><td style="text-align:center"> <img src="https://rakma.org/uploads/ff630a7b7053b2aa479cab2712d68f8f.png" style="width:150px">
-					<h2 style="font-size:70px; font-weight:bold; color:#016c38; letter-spacing:20px">RAKMA</h2></td></tr>					 
+					<h2 style="font-size:34px; font-weight:bold; color:#016c38; letter-spacing:20px">RAKMA</h2></td></tr>					 
 					 <tr><td style="text-align:center">
 					<p style="font-size:20px; color:#000; ">Raj. Adhikari Karamchari Minority Association</p></td></tr>
 					  <tr><td height="5px"></td></tr>

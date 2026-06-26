@@ -280,7 +280,7 @@ public function checkmembershipalredy()
 					$name = $userDetails['first_name'].' '.$userDetails['middle_name'].' '.$userDetails['last_name'];
 					$father_husband_name = $userDetails['father_husband_name'];
 					$post = $userDetails['post_type'];
-					$district = $userDetails['district'];
+					$district = $userDetails['district_name'];
 					$mobile = $userDetails['phone'];
 					$id = $userDetails['id'];
 					$html = '
@@ -296,7 +296,7 @@ public function checkmembershipalredy()
 						            <input type="checkbox" name="confirm_check"  id="confirm_check"  class="form-radio h-6 w-6 shadow-inner border border-gray-300 text-blues focus:ring-blues">
 						            <input type="hidden" value="'.$id.'" id="user__id"?>
 						            <span>Confirm: if the above information is correct</span>
-						        </label> 
+						        </label>
 						    </div>
 						</div>
 
@@ -339,18 +339,19 @@ public function upgrademembership()
 			{
 				$Activemenbership = $this->common->getSingleRecordByFieldName(array('user_id'=> $_POST['userid'] , 'membership_status' =>'Active'), $table='user_membership');
 				if ($Activemenbership) {
-					$getmembershipforuser = $this->common->getAllRecordsByFieldName(array('price >'=> $Activemenbership['price'] , 'status'=>'1'), $table='membership', 'price ASC');
-					if ($getmembershipforuser) {
-						$output['status'] = true;
-						$output['data']	= $this->load->view('site/section/upgrade' , array('membership_list' =>$getmembershipforuser ) , true);
-					}else
-					{
 
-					$membership = $this->common->getSingleRecordByFieldName(array('id' =>$Activemenbership['membership_id']), 'membership');
-
+					if ($Activemenbership['type'] === 'Lifetime') {
 						$output['status'] = true;
-						$output['data'] = '<div class="relative p-4 border border-green-500 rounded text-green-700 bg-green-50 font-semibold shadow-md my-2" role="alert">You have an '.$membership["name"].' membership and currently, you dont need to upgrade. </div>';
-						
+						$output['data'] = '<div class="relative p-4 border border-green-500 rounded text-green-700 bg-green-50 font-semibold shadow-md my-2" role="alert">You already have Lifetime Membership. Currently, no upgrade is required.</div>';
+					} else {
+						$getmembershipforuser = $this->common->getAllRecordsByFieldName(array('type' => 'Lifetime', 'status' => '1'), $table='membership', 'price ASC');
+						if ($getmembershipforuser) {
+							$output['status'] = true;
+							$output['data'] = $this->load->view('site/section/upgrade', array('membership_list' => $getmembershipforuser), true);
+						} else {
+							$output['status'] = true;
+							$output['data'] = '<div class="relative p-4 border border-green-500 rounded text-green-700 bg-green-50 font-semibold shadow-md my-2" role="alert">No upgrade options are currently available.</div>';
+						}
 					}
 
 				}else
@@ -379,116 +380,287 @@ public function updatemembership()
 		$output['status'] = false;
 		$output['data'] = '';
 		$output['msg'] = '';
-		if(
+
+		log_message('error', 'UPGRADE POST: ' . json_encode($_POST));
+
+		
+
+		if (
 			(isset($_POST['userid']) && !empty($_POST['userid'])) &&
-			(isset($_POST['id']) && !empty($_POST['id'])) && 
-			(isset($_POST['price']) && !empty($_POST['price'])) && 
-			(isset($_POST['payment_id']) && !empty($_POST['payment_id'])) 
+			(isset($_POST['id']) && !empty($_POST['id'])) &&
+			(isset($_POST['payment_id']) && !empty($_POST['payment_id']))
 		) {
-			
-			
-			$paymentRes = get_order($_POST['payment_id']);
-				if($paymentRes)
-				{
-					$paymentstatus = $paymentRes['status'];
-					$price = $paymentRes['amount']/100;
-					$paymentID = $paymentRes['id'];
-					$phone = $paymentRes['contact'];
-					$member_data = $this->common->getSingleRecordByFieldName(array('id'=> $_POST['userid'] ), $table='users');
-					$insert = array(
-					'payment_id' => $_POST['payment_id'], 
-					'price' => $price, 
-					'membership_id' => $_POST['id'], 
-					'user_id' => $_POST['userid'], 
-					'payment_status' =>$paymentstatus, 
-					'type' =>'Membership_Upgrade',
-					'name' =>$member_data['first_name'].' '.$member_data['middle_name'].' '.$member_data['last_name'],
-					'mobile' =>$phone,
-					'payment_date' =>current_date(),
-					);
-					$txn_data_id =  $this->common->insert('transaction' , $insert);
 
+		$_POST['payment_id'] = trim($_POST['payment_id']);
+		log_message('error', 'PAYMENT ID: ' . $_POST['payment_id']);
 
-					$updatedataold = array(
-					'membership_status' =>'Inactive', 
-					);
-					$this->common->updateByColumn(array('user_id'=>$_POST['userid']), $updatedataold , 'user_membership');
+		$existing = $this->common->getSingleRecordByFieldName(
+			array('payment_id' => $_POST['payment_id']),
+			'transaction'
+		);
 
-					$getprice = 	$this->common->getSingleRecordByFieldName(array('id' =>$_POST['id']), 'membership');
-					$membership = array(
-					'price' => $getprice['price'], 
-					'membership_id' => $_POST['id'], 
-					'user_id' =>  $_POST['userid'], 
-					'membership_status' =>'Active',
-					'type' => ($_POST['id'] == 3) ? 'Lifetime' : 'Upgrade',
-					'membership_date' =>current_date(),
-					);
-					$membership_id =  $this->common->insert('user_membership' , $membership);
-
-					$updatemembership_id = array();
-					$updatemembership_id['membership_id'] = $membership_id;
-					$updatemembership_id['payment_id'] =  $_POST['payment_id'];
-					$this->common->update($_POST['userid'] , $updatemembership_id , 'users');
-
-					$capture = capture($_POST['payment_id'] , $price);
-					if ($capture) {
-					$update = array();
-					$update['payment_status'] = 'Complete';
-					$this->common->update($txn_data_id , $update , 'transaction');
-				}
-				}
-
-
-
-
+		if ($existing) {
 			$output['status'] = true;
-			$output['data'] = ' <div class="relative p-4 border border-green-500 rounded text-green-700 bg-green-50 font-semibold shadow-md my-2" role="alert">
-			Congratulations! Your your membership is upgraded. Download your receipt <a href="'.base_url("home/pdf_m/".$_POST['userid']).'" target="_blank" class="text-blue-600 underline">here</a>
-			</div>';
-		}else
-		{
-			$output['data'] = 'Opps somthing wrong!';
+			$output['data'] = '<div class="alert alert-info">This payment was already processed.</div>';
+			echo json_encode($output);
+			return;
 		}
-		echo json_encode($output);
+		log_message('error', 'STEP 1: Duplicate check passed');
+		try {
+			$paymentRes = get_order($_POST['payment_id']);
+		} catch (Exception $e) {
+			log_message('error', $e->getMessage());
+				$output['data'] = 'Payment API error';
+				echo json_encode($output);
+				return;
+		}
+			
+			log_message('error', 'PAYMENT RESPONSE: ' . json_encode($paymentRes));
+			
+		if (!$paymentRes) {
+				$output['status'] = false;
+				$output['data'] = '<div class="alert alert-danger">Payment verification failed.</div>';
+				echo json_encode($output);
+				return;
+			}
+		log_message('error', 'STEP 2: Payment verification passed');
+			
+
+			$paymentstatus = $paymentRes['status'];
+
+			if (!in_array($paymentstatus, ['authorized', 'captured'])) {
+				log_message('error', 'Invalid payment status: ' . $paymentstatus);
+
+				$output['status'] = false;
+				$output['data'] = '<div class="alert alert-danger">Invalid payment status.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			$price = $paymentRes['amount'] / 100;
+			//$paymentID = $paymentRes['id'];
+			$phone = $paymentRes['contact'];
+
+			$member_data = $this->common->getSingleRecordByFieldName(array('id' => $_POST['userid']), $table = 'users');
+			if (!$member_data) {
+				log_message('error', 'User not found: ' . $_POST['userid']);
+				$output['status'] = false;
+				$output['data'] = '<div class="alert alert-danger">User not found.</div>';
+				echo json_encode($output);
+				return;
+			}
+			$getprice = $this->common->getSingleRecordByFieldName(array('id' => $_POST['id']), 'membership');
+			if (!$getprice) {
+				log_message('error', 'Membership not found: ' . $_POST['id']);
+				$output['status'] = false;
+				$output['data'] = '<div class="alert alert-danger">Membership not found.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			if ((float)$price !== (float)$getprice['price']) {
+				log_message('error', 'Amount mismatch. Razorpay: ' . $price . ', Membership: ' . $getprice['price']);
+
+				$output['status'] = false;
+				$output['data'] = '<div class="alert alert-danger">Payment amount mismatch.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			$insert = array(
+				'payment_id'     => $_POST['payment_id'],
+				'price'          => $price,
+				'membership_id'  => $_POST['id'],
+				'user_id'        => $_POST['userid'],
+				'payment_status' => ($paymentstatus == 'captured') ? 'Complete' : 'Authorized',
+				'type'           => 'Membership_Upgrade',
+				'name'           => $member_data['first_name'] . ' ' . $member_data['middle_name'] . ' ' . $member_data['last_name'],
+				'mobile'         => $phone,
+				'payment_date'   => current_date(),
+			);
+
+			
+			$this->db->trans_start();
+			$txn_data_id = $this->common->insert('transaction', $insert);
+			if (!$txn_data_id) {
+				log_message('error', 'Transaction insert failed');
+			}
+			log_message('error', 'STEP 3: Transaction inserted ID = ' . $txn_data_id);
+
+			$updatedataold = array(
+				'membership_status' => 'Inactive',
+			);
+			$this->common->updateByColumn(array('user_id' => $_POST['userid']), $updatedataold, 'user_membership');
+
+			
+			$membership = array(
+				'price'             => $getprice['price'],
+				'membership_id'     => $_POST['id'],
+				'user_id'           => $_POST['userid'],
+				'membership_status' => 'Active',
+				'type'              => ($_POST['id'] == 3) ? 'Lifetime' : 'Upgrade',
+				'membership_date'   => current_date(),
+			);
+			$membership_id = $this->common->insert('user_membership', $membership);
+			if (!$membership_id) {
+				log_message('error', 'Membership insert failed');
+			}
+			log_message('error', 'STEP 4: Membership inserted ID = ' . $membership_id);
+			$updatemembership_id = array();
+			$updatemembership_id['membership_id'] = $membership_id;
+			$updatemembership_id['payment_id']     = $_POST['payment_id'];
+			$this->common->update($_POST['userid'], $updatemembership_id, 'users');
+			log_message('error', 'STEP 5: User updated');
+
+			$this->db->trans_complete();
+			log_message('error', 'DB Transaction completed');
+
+			if ($this->db->trans_status() === FALSE) {
+				log_message('error', 'Membership upgrade DB transaction failed');
+
+				$output['status'] = false;
+				$output['data'] = '<div class="alert alert-danger">Database transaction failed.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+
+			if ($paymentstatus == 'captured') {
+
+				$update = array();
+				$update['payment_status'] = 'Complete';
+				$this->common->update($txn_data_id, $update, 'transaction');
+				log_message('error', 'Transaction marked as Complete for payment: ' . $_POST['payment_id']);
+
+			} else {
+
+				try {
+					$capture = capture($_POST['payment_id'], $price);
+					log_message('error', 'CAPTURE RESULT: ' . json_encode($capture));
+				} catch (Exception $e) {
+					log_message('error', 'Capture failed: ' . $e->getMessage());
+					$capture = false;
+				}
+
+				if (!$capture) {
+					log_message('error', 'Payment capture failed for payment_id: ' . $_POST['payment_id']);
+
+					$output['status'] = false;
+					$output['data'] = '<div class="alert alert-warning">Payment was authorized but capture failed. Please contact admin with Payment ID: ' . $_POST['payment_id'] . '</div>';
+					echo json_encode($output);
+					return;
+				}
+
+				$update = array();
+				$update['payment_status'] = 'Complete';
+				$this->common->update($txn_data_id, $update, 'transaction');
+				log_message('error', 'Transaction marked as Complete for payment: ' . $_POST['payment_id']);
+			}
+
+
+			
+
+
+			log_message('error', 'STEP 6: Upgrade completed successfully for payment: ' . $_POST['payment_id']);
+			$output['status'] = true;
+			$output['data'] = '<div class="relative p-4 border border-green-500 rounded text-green-700 bg-green-50 font-semibold shadow-md my-2" role="alert">
+			Congratulations! Your membership is upgraded.
+			Download your receipt <a href="' . base_url("home/pdf_m/" . $_POST['userid']) . '" target="_blank" class="text-blue-600 underline">here</a>
+			</div>';
+			echo json_encode($output);
+			return;
+
+		} else {
+			log_message('error', 'Final validation failed in updatemembership()');
+
+			$output['status'] = false;
+			$output['data'] = '<div class="alert alert-danger">Something went wrong. Please try again.</div>';
+			echo json_encode($output);
+			return;
+		}
 	}
 
 
 	public function lifeTimeMembership()
 	{
-	    $userid = $this->input->post('userid'); // Assuming you're using CodeIgniter
-	    $membership_id = $this->input->post('membership_id'); // Assuming you're using CodeIgniter
-	   
-	    // Get price of the membership
-	    $membership = $this->common->getSingleRecordByFieldName(array('id' => $membership_id), 'membership');
+		$response = array('success' => false, 'msg' => '');
 
-	  
+		$userid        = $this->input->post('userid');
+		$membership_id = $this->input->post('membership_id');
 
-	   if(isset($membership['type']) && $membership['type'] == 'Lifetime')
-	   {
-	   		$membershipdata = array(
-			'price' => $membership['price'], 
-			'membership_id' =>$membership_id, 
-			'user_id' => $userid, 
-			'membership_status' =>'Active',
-			'type' =>'Lifetime',
-			'membership_date' =>current_date(),
-			);
-			$nsetmembership_id =  $this->common->insert('user_membership' , $membershipdata);
+		log_message('error', 'lifeTimeMembership POST: userid=' . $userid . ', membership_id=' . $membership_id);
 
-			$updatemembership_id = array();
-			$updatemembership_id['membership_id'] = $nsetmembership_id;
-			$this->common->update($userid , $updatemembership_id , 'users');
+		if (empty($userid) || empty($membership_id)) {
+			log_message('error', 'lifeTimeMembership: missing userid or membership_id');
+			$response['msg'] = 'Invalid request.';
+			echo json_encode($response);
+			return;
+		}
 
-	   
-	    	$response = array('success' => true  , 'msg' => 'Your membershp update  successful, the administrator will verify your account and inform you.'); // You can add more data if needed
-	   }else
-	   {
-	   		$response = array('success' => false  , 'Go to online payment'); // You can add more data if needed
-	   }
+		$user = $this->common->getSingleRecordByFieldName(array('id' => $userid), 'users');
+		if (!$user) {
+			log_message('error', 'lifeTimeMembership: user not found: ' . $userid);
+			$response['msg'] = 'User not found.';
+			echo json_encode($response);
+			return;
+		}
 
+		$membership = $this->common->getSingleRecordByFieldName(array('id' => $membership_id), 'membership');
+		if (!$membership) {
+			log_message('error', 'lifeTimeMembership: membership not found: ' . $membership_id);
+			$response['msg'] = 'Membership not found.';
+			echo json_encode($response);
+			return;
+		}
 
+		if (!isset($membership['type']) || $membership['type'] !== 'Lifetime') {
+			log_message('error', 'lifeTimeMembership: not a lifetime membership: ' . $membership_id);
+			$response['msg'] = 'Go to online payment';
+			echo json_encode($response);
+			return;
+		}
 
-	   echo json_encode($response);
+		$existing = $this->common->getSingleRecordByFieldName(
+			array('user_id' => $userid, 'membership_id' => $membership_id, 'membership_status' => 'Active'),
+			'user_membership'
+		);
+		if ($existing) {
+			log_message('error', 'lifeTimeMembership: duplicate active membership for user: ' . $userid);
+			$response['success'] = true;
+			$response['msg'] = 'Your membership is already active.';
+			echo json_encode($response);
+			return;
+		}
+
+		$this->db->trans_start();
+
+		$membershipdata = array(
+			'price'             => $membership['price'],
+			'membership_id'     => $membership_id,
+			'user_id'           => $userid,
+			'membership_status' => 'Active',
+			'type'              => 'Lifetime',
+			'membership_date'   => current_date(),
+		);
+		$nsetmembership_id = $this->common->insert('user_membership', $membershipdata);
+
+		$updatemembership_id = array();
+		$updatemembership_id['membership_id'] = $nsetmembership_id;
+		$this->common->update($userid, $updatemembership_id, 'users');
+
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === FALSE) {
+			log_message('error', 'lifeTimeMembership: DB transaction failed for user: ' . $userid);
+			$response['msg'] = 'Database error. Please try again.';
+			echo json_encode($response);
+			return;
+		}
+
+		log_message('error', 'lifeTimeMembership: completed successfully for user: ' . $userid);
+		$response['success'] = true;
+		$response['msg'] = 'Your membership update successful, the administrator will verify your account and inform you.';
+		echo json_encode($response);
 	}
 
 
@@ -1022,7 +1194,7 @@ $get_data =	$this->common->getAllRecordsByFieldName(array('gallery_id' => $_POST
 					$name = $userDetails['first_name'].' '.$userDetails['middle_name'].' '.$userDetails['last_name'];
 					$father_husband_name = $userDetails['father_husband_name'];
 					$post = $userDetails['post_type'];
-					$district = $userDetails['district'];
+					$district = $userDetails['district_name'];
 					$mobile = $userDetails['phone'];
 					$id = $userDetails['id'];
 					$html = '
@@ -1035,7 +1207,7 @@ $get_data =	$this->common->getAllRecordsByFieldName(array('gallery_id' => $_POST
 						    <div class="relative text-left text-gray-600 font-semibold"><label class="font-medium pb-1 block">Mobile No.:</label> '.$mobile.'</div>
 						    <div class="col-span-2">
 						        <label   class="flex items-center text-left space-x-2 font-medium text-sm sm:text-base text-gray-600 ">
-						           
+
 						            <span>महासमिति सदस्य निर्वाचन हेतु आवेदन करने के लिए महासमिति सदस्य हेतु निर्धारित शुल्क का भुगतान करें.</span>
 						        </label> 
 						    </div>
@@ -1053,14 +1225,6 @@ $get_data =	$this->common->getAllRecordsByFieldName(array('gallery_id' => $_POST
 				$output['status'] = true;
 				$output['data'] = $html;
 					}
-
-
-
-					
-
-
-
-
 
 				}else
 				{

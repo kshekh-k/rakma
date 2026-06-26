@@ -101,6 +101,7 @@ public function cp()
 
 	public function pdf_m($id = '')
 	{
+		log_message('error', 'PDF_M CALLED FOR USER: ' . $id);
 		
 			$user_data =  $this->common->getUsersforPDF($id);
 			//echo '<pre>'; print_r($user_data); die;
