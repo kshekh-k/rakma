@@ -212,6 +212,7 @@ echo $currentTime; die;
 					'membership_status' =>'Active',
 					'type' =>'Lifetime',
 					'membership_date' =>current_date(),
+					'membership_expiry_date' => NULL,
 					);
 					$membership_id =  $this->common->insert('user_membership' , $membership);
 
@@ -273,13 +274,16 @@ echo $currentTime; die;
 					);
 					$txn_data_id =  $this->common->insert('transaction' , $insert);
 					$getprice = 	$this->common->getSingleRecordByFieldName(array('id' =>$_POST['membership_id']), 'membership');
+					$type = ($_POST['membership_id'] == 3) ? 'Lifetime' : 'Join';
+					$membership_date = current_date();
 					$membership = array(
 					'price' => $getprice['price'], 
 					'membership_id' => $_POST['membership_id'], 
 					'user_id' => $insert_id, 
 					'membership_status' =>'Active',
-					'type' => ($_POST['membership_id'] == 3) ? 'Lifetime' : 'Join',
-					'membership_date' =>current_date(),
+					'type' => $type,
+					'membership_date' => $membership_date,
+					'membership_expiry_date' => ($type == 'Lifetime') ? NULL : date('Y-m-d H:i:s', strtotime('+2 years', strtotime($membership_date))),
 					);
 					$membership_id =  $this->common->insert('user_membership' , $membership);
 

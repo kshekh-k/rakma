@@ -16,13 +16,26 @@ class User extends CI_Controller {
 	public function index()
 	{
 		$data = array();
-		$data['section_heading'] = 'All Members List';
+		$data['section_heading'] = 'Active Members List';
 		$data['rows'] = $this->common->getUsers();
 		$data['districts'] = $this->common->getAllRecordsByFieldName(array('status'=>'1') , 'district' , 'ASC');
 		/*echo '<pre>'; print_r($data); die;*/
 		$this->load->view('admin/layout/header');
 		$this->load->view('admin/layout/sidebar');
 		$this->load->view('admin/users/index' , $data);
+		$this->load->view('admin/layout/footer');
+	}
+
+	public function expiredmembers()
+	{
+		$data = array();
+		$data['section_heading'] = 'Expired Members List';
+		$data['rows'] = $this->common->getExpiredUsers();
+		$data['districts'] = $this->common->getAllRecordsByFieldName(array('status'=>'1') , 'district' , 'ASC');
+		/*echo '<pre>'; print_r($data); die;*/
+		$this->load->view('admin/layout/header');
+		$this->load->view('admin/layout/sidebar');
+		$this->load->view('admin/users/expired' , $data);
 		$this->load->view('admin/layout/footer');
 	}
 
@@ -91,7 +104,7 @@ class User extends CI_Controller {
 	public function lifetimememberships()
 	{
 		$data = array();
-		$data['section_heading'] = 'All Members List';
+		$data['section_heading'] = 'Lifetime Members List';
 		$data['rows'] = $this->common->getlifetimeUsers();
 		$data['districts'] = $this->common->getAllRecordsByFieldName(array('status'=>'1') , 'district' , 'ASC');
 		/*echo '<pre>'; print_r($data); die;*/
@@ -253,25 +266,29 @@ class User extends CI_Controller {
 		if (isset($_POST['service']) && !empty($_POST['service'])) {
 			$search_data['users.service_status'] = $_POST['service'];
 		}
-		if (isset($_POST['verify']) && $_POST['verify'] == '0' || $_POST['verify'] == '1') {
+		if (isset($_POST['verify']) && $_POST['verify'] !== '') {
 			$search_data['users.verify'] = $_POST['verify'];
 		}
 		if (isset($_POST['membership_type']) && !empty($_POST['membership_type'])) {
 			$search_data['um.price'] = $_POST['membership_type'];
 		}
 
-
+		$membership_status = '';
+		if (isset($_POST['membership_status']) && !empty($_POST['membership_status'])) {
+			$membership_status = trim($_POST['membership_status']);
+		}
 		
 		$getFields = 'users.first_name , users.middle_name , users.last_name , users.father_husband_name  , users.phone , users.email , users.dob , users.married_status , users.gender,   users.gender  ,  users.post_name  , service.name as service_name ,  department.name as department_name,  users.post_type ,  users.service_status ,  users.district , office_district , users.verify , create_at';	
-		$get_data = $this->export->getAllUsersByCondtion($search_data , $getFields , 'users.first_name ASC');
+		$get_data = $this->export->getAllUsersByCondtion($search_data , $getFields , 'users.first_name ASC', '', $membership_status);
 
 
 		if ($get_data) {
 			$delimiter = ","; 
-			$filename = "members-data_" . date('Y-m-d') . ".csv"; 
-   			$f = fopen('php://memory', 'w'); 
+			$statusSuffix = (!empty($membership_status)) ? "_" . $membership_status : "";
+			$filename = "members-data" . $statusSuffix . "_" . date('Y-m-d') . ".csv"; 
+			$f = fopen('php://memory', 'w'); 
 
-   			$table_columns = array("Name" , "F/H Name" ,"Mobile No", "Email" ,  "Date of Birth" , "Marital Status" ,"Gender" , "Post Name" , "Service Category" , "Name of Department" , "Post Type" ,'Service Status' , 'Home Distt' , "Posting Distt" , 'Membership Name' , 'Membership price' , "Status" , "Register Date");
+   			$table_columns = array("Name" , "F/H Name" ,"Mobile No", "Email" ,  "Date of Birth" , "Marital Status" ,"Gender" , "Post Name" , "Service Category" , "Name of Department" , "Post Type" ,'Service Status' , 'Home Distt' , "Posting Distt" , 'Membership Name' , 'Membership Type', 'Membership price' , 'Start Date', 'Expiry Date', 'Membership Status', "Approval Status" , "Register Date");
 
    			fputcsv($f, $table_columns, $delimiter); 
    			$store_data = array();
@@ -300,7 +317,20 @@ class User extends CI_Controller {
 				$tem[] = $value['district'];
 				$tem[] = $value['office_district'];
 				$tem[] = $value['membership_name'];
+				$tem[] = !empty($value['membership_type']) ? $value['membership_type'] : '';
 				$tem[] = $value['membership_price'];
+
+				$sDate = (!empty($value['membership_date']) && $value['membership_date'] != '0000-00-00 00:00:00') ? $value['membership_date'] : $value['create_at'];
+				$tem[] = date("d-m-Y", strtotime($sDate));
+
+				if (!empty($value['membership_type']) && $value['membership_type'] == 'Lifetime') {
+					$tem[] = 'Lifetime';
+					$tem[] = 'Active';
+				} else {
+					$exp = !empty($value['membership_expiry_date']) ? $value['membership_expiry_date'] : date('Y-m-d H:i:s', strtotime('+2 years', strtotime($sDate)));
+					$tem[] = date("d-m-Y", strtotime($exp));
+					$tem[] = (strtotime($exp) < time()) ? 'Expired' : 'Active';
+				}
 
 				if($value['verify'] == '1')
 				{
@@ -320,7 +350,7 @@ class User extends CI_Controller {
 
    			
 
-   			excel_export($table_columns , $store_data , 'rakmamembers');
+   			excel_export($table_columns , $store_data , 'rakmamembers' . $statusSuffix);
 
 
 
@@ -339,7 +369,7 @@ class User extends CI_Controller {
 	{
 		$data = array();
 		$data['section_heading'] = 'Members Details';
-		$data['row'] = $this->common->getUsers($id);
+		$data['row'] = $this->common->getsingleUsersByCondtion(array('users.id' => $id));
 		$data['membership'] = $this->common->getallusermembership($id);
 
 		/*echo '<pre>'; print_r($data); die;*/

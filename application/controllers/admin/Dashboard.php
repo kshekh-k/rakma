@@ -12,10 +12,14 @@ class Dashboard extends CI_Controller {
 	public function index()
 	{
 		$data = array();
-		$data['user_data'] =  $this->common->getAllRecords('users' , 'DESC' , '10');
+		$data['user_data'] =  $this->common->getLatestActiveMembers(10);
 		$data['donations'] =  $this->common->getAllRecords('donation' , 'DESC' , '10');
 		$data['donation_info'] =  $this->common->doantion_info();
 		$data['txn_info'] =  $this->common->txn_info();
+		$data['active_members_count'] = count($this->common->getUsers());
+		$data['lifetime_members_count'] = count($this->common->getlifetimeUsers());
+		$data['expired_members_count'] = count($this->common->getExpiredUsers());
+		$data['total_members_count'] = countdata('users', array('role' => 'User'));
 		
 
 		$this->load->view('admin/layout/header' , $data);

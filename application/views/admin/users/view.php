@@ -200,30 +200,107 @@
                                          
      
 
-                                              <h3 class="card-title pt-4">Type of Membership</h3>
+                                              <h3 class="card-title pt-4">Membership Details</h3>
 
-                                            <label><b>Membership :</b> <?php echo $row['membership_name']; ?></label>
-                                            <br>
+                                            <div class="row mb-3">
+                                                <div class="col-md-4">
+                                                    <label><b>Current Plan:</b> <?php echo !empty($row['membership_name']) ? $row['membership_name'] : "N/A"; ?></label><br>
+                                                    <label><b>Price:</b> &#x20B9;<?php echo !empty($row['m_price']) ? $row['m_price'] : "0"; ?></label>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label><b>Type:</b> 
+                                                        <?php 
+                                                            if (!empty($row['m_type'])) {
+                                                                if ($row['m_type'] == "Lifetime") {
+                                                                    echo "<span class=\"badge badge-pill badge-primary\">Lifetime</span>";
+                                                                } elseif ($row['m_type'] == "Renew" || $row['m_type'] == "Renewed") {
+                                                                    echo "<span class=\"badge badge-pill badge-warning\">Renewed</span>";
+                                                                } elseif ($row['m_type'] == "Join") {
+                                                                    echo "<span class=\"badge badge-pill badge-success\">New Joining</span>";
+                                                                } else {
+                                                                    echo "<span class=\"badge badge-pill badge-info\">".$row['m_type']."</span>";
+                                                                }
+                                                            } else {
+                                                                echo "N/A";
+                                                            }
+                                                        ?>
+                                                    </label><br>
+                                                    <label><b>Membership Status:</b> 
+                                                        <?php 
+                                                            if (!empty($row['m_type']) && $row['m_type'] == "Lifetime") {
+                                                                echo "<span class=\"badge badge-pill badge-success\">Active</span>";
+                                                            } else {
+                                                                $exp = !empty($row['membership_expiry_date']) ? $row['membership_expiry_date'] : (!empty($row['membership_date']) ? date("Y-m-d H:i:s", strtotime("+2 years", strtotime($row['membership_date']))) : null);
+                                                                if ($exp && strtotime($exp) < time()) {
+                                                                    echo "<span class=\"badge badge-pill badge-danger\">Expired</span>";
+                                                                } else {
+                                                                    echo "<span class=\"badge badge-pill badge-success\">Active</span>";
+                                                                }
+                                                            }
+                                                        ?>
+                                                    </label>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label><b>Start Date:</b> 
+                                                        <?php 
+                                                            $sDate = (!empty($row['membership_date']) && $row['membership_date'] != "0000-00-00 00:00:00") ? $row['membership_date'] : $row['create_at'];
+                                                            echo date("d-M-Y", strtotime($sDate));
+                                                        ?>
+                                                    </label><br>
+                                                    <label><b>Expiry Date:</b> 
+                                                        <?php 
+                                                            if (!empty($row['m_type']) && $row['m_type'] == "Lifetime") {
+                                                                echo "<span class=\"badge badge-pill badge-primary\">Lifetime (Never Expires)</span>";
+                                                            } else {
+                                                                $exp = !empty($row['membership_expiry_date']) ? $row['membership_expiry_date'] : date("Y-m-d H:i:s", strtotime("+2 years", strtotime($sDate)));
+                                                                if (strtotime($exp) < time()) {
+                                                                    echo "<span class=\"badge badge-pill badge-danger\">" . date("d-M-Y", strtotime($exp)) . " (Expired)</span>";
+                                                                } else {
+                                                                    echo "<span class=\"badge badge-pill badge-info\">" . date("d-M-Y", strtotime($exp)) . "</span>";
+                                                                }
+                                                            }
+                                                        ?>
+                                                    </label>
+                                                </div>
+                                            </div>
 
-                                             <label><b>Price:</b> &#x20B9;<?php echo $row['m_price']; ?></label>
-                                            <br>
-
-
+                                            <h5 class="card-title pt-2">Membership History</h5>
                                             <table class="table table-striped table-bordered">
+                                            	<thead>
                                             	<tr>
                                             		<th>Membership</th>
+                                            		<th>Type</th>
                                             		<th>Price</th>
                                             		<th>Status</th>
-                                            		<th>Date</th>
+                                            		<th>Start Date</th>
+                                            		<th>Expiry Date</th>
                                             	</tr>
+                                            	</thead>
+                                            	<tbody>
                                             	<?php if($membership){ foreach ($membership as $key => $value) { ?>
                                             		<tr>
                                             			<td><?php echo $value['name']; ?></td>
-                                            			<td><?php echo $value['price']; ?></td>
+                                            			<td><?php echo $value['type']; ?></td>
+                                            			<td>&#x20B9;<?php echo $value['price']; ?></td>
                                             			<td><?php echo $value['membership_status']; ?></td>
-                                            			<td><?php echo  date("d-m-Y", strtotime($value['membership_date'])); ?></td>
+                                            			<td><?php echo !empty($value['membership_date']) ? date("d-M-Y", strtotime($value['membership_date'])) : "-"; ?></td>
+                                            			<td>
+                                            				<?php 
+                                            					if ($value['type'] == "Lifetime") {
+                                            						echo "<span class=\"badge badge-pill badge-primary\">Lifetime</span>";
+                                            					} else {
+                                            						$itemExpiry = !empty($value['membership_expiry_date']) ? $value['membership_expiry_date'] : (!empty($value['membership_date']) ? date("Y-m-d H:i:s", strtotime("+2 years", strtotime($value['membership_date']))) : null);
+                                            						if ($itemExpiry) {
+                                            							echo (strtotime($itemExpiry) < time()) ? "<span class=\"badge badge-pill badge-danger\">" . date("d-M-Y", strtotime($itemExpiry)) . "</span>" : "<span class=\"badge badge-pill badge-info\">" . date("d-M-Y", strtotime($itemExpiry)) . "</span>";
+                                            						} else {
+                                            							echo "-";
+                                            						}
+                                            					}
+                                            				?>
+                                            			</td>
                                             		</tr>
                                             	<?php }} ?>
+                                            	</tbody>
                                             </table>
 
 

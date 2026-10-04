@@ -29,7 +29,7 @@
                   </div>
                </form>
                <!-- Existing Member -->
-               <p class="py-3 border-t border-gray-200 mt-3 text-gray-600 font-medium  text-sm sm:text-base">Are you existing member and want upgrade your membership. <a href="<?php echo base_url('/page/membershipupgrade') ?>" class="text-blue-600 hover:text-secondary undeline block xs:inline-block">Upgrade Now</a></p>
+               <p class="py-3 border-t border-gray-200 mt-3 text-gray-600 font-medium text-sm sm:text-base">Are you an existing member? <a href="<?php echo base_url('/page/membershiprenew') ?>" class="text-blue-600 hover:text-secondary underline font-semibold">Renew Membership</a> <span class="text-gray-400 mx-1">|</span> <a href="<?php echo base_url('/page/membershipupgrade') ?>" class="text-blue-600 hover:text-secondary underline font-semibold">Upgrade Now</a></p>
                <div id="ref_alert"></div>
             </div>
             <input type="hidden" name="ref_name_hidden" id="ref_name_hidden">

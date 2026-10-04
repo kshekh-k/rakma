@@ -55,7 +55,7 @@ class Export_model extends CI_Model {
         }*/
 
 
-        public function getAllUsersByCondtion($where = '' , $fields='',  $order = '' ,  $limit='') {
+        public function getAllUsersByCondtion($where = '' , $fields='',  $order = '' ,  $limit='', $membership_status = '') {
 
                 if(!empty($fields))
                 {       
@@ -64,33 +64,72 @@ class Export_model extends CI_Model {
                 {
                    $this->db->select('users.*');     
                 }
-                
                
-   
-              
                 $this->db->select('state.name as state');
-                 $this->db->select('district.name as district');
-                 $this->db->select('office_state.name as office_state');
-                 $this->db->select('post_district.name as office_district');
-                 $this->db->select('um.price as membership_price');
-                 $this->db->select('m.name as membership_name');
-                 if(!empty($where))
-                        {
-                                 $this->db->where($where);
-                                // $date_condition = "create_at < '2023-01-01'";
-                              //  $this->db->where($date_condition);
-                        }
-                        $this->db->where('users.role !=' , 'Admin');
+                $this->db->select('district.name as district');
+                $this->db->select('office_state.name as office_state');
+                $this->db->select('post_district.name as office_district');
+                $this->db->select('um.price as membership_price');
+                $this->db->select('m.name as membership_name');
+                $this->db->select('um.type as membership_type, um.membership_date, um.membership_expiry_date, um.membership_status');
+                if(!empty($where))
+                {
+                    $this->db->where($where);
+                }
+                $this->db->where('users.role !=' , 'Admin');
+
+                $now = date('Y-m-d H:i:s');
+                if (!empty($membership_status)) {
+                    if ($membership_status === 'live' || $membership_status === 'active') {
+                        $this->db->where('um.membership_status', 'Active');
+                        $this->db->group_start();
+                        $this->db->where('um.type', 'Lifetime');
+                        $this->db->or_group_start();
+                        $this->db->where_in('um.type', array('Join', 'Upgrade', 'Renew'));
+                        $this->db->group_start();
+                        $this->db->where('um.membership_expiry_date >=', $now);
+                        $this->db->or_group_start();
+                        $this->db->where('um.membership_expiry_date IS NULL', null, false);
+                        $this->db->where("DATE_ADD(um.membership_date, INTERVAL 2 YEAR) >=", $now);
+                        $this->db->group_end();
+                        $this->db->group_end();
+                        $this->db->group_end();
+                        $this->db->group_end();
+                    } elseif ($membership_status === 'expired') {
+                        $this->db->where('um.membership_status', 'Active');
+                        $this->db->where_in('um.type', array('Join', 'Upgrade', 'Renew'));
+                        $this->db->group_start();
+                        $this->db->where('um.membership_expiry_date <', $now);
+                        $this->db->or_group_start();
+                        $this->db->where('um.membership_expiry_date IS NULL', null, false);
+                        $this->db->where("DATE_ADD(um.membership_date, INTERVAL 2 YEAR) <", $now);
+                        $this->db->group_end();
+                        $this->db->group_end();
+                    } elseif ($membership_status === 'active_2year') {
+                        $this->db->where('um.membership_status', 'Active');
+                        $this->db->where_in('um.type', array('Join', 'Upgrade', 'Renew'));
+                        $this->db->group_start();
+                        $this->db->where('um.membership_expiry_date >=', $now);
+                        $this->db->or_group_start();
+                        $this->db->where('um.membership_expiry_date IS NULL', null, false);
+                        $this->db->where("DATE_ADD(um.membership_date, INTERVAL 2 YEAR) >=", $now);
+                        $this->db->group_end();
+                        $this->db->group_end();
+                    } elseif ($membership_status === 'lifetime') {
+                        $this->db->where('um.type', 'Lifetime');
+                        $this->db->where('um.membership_status', 'Active');
+                    }
+                }
                       
-                        $this->db->join('department', 'department.id = users.name_of_diparment', 'left');
-                        $this->db->join('service', 'service.id = users.service_category', 'left');
-                        $this->db->join('state', 'state.id = users.state', 'left');
-                        $this->db->join('district', 'district.id = users.district', 'left');
-                        $this->db->join('state as office_state', 'office_state.id = users.office_state', 'left');
-                        $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
-                        $this->db->join('user_membership as um', 'um.id = users.membership_id', 'left');
-                        $this->db->join('membership as m', 'm.id = um.membership_id', 'left');
-                        $this->db->from('users');
+                $this->db->join('department', 'department.id = users.name_of_diparment', 'left');
+                $this->db->join('service', 'service.id = users.service_category', 'left');
+                $this->db->join('state', 'state.id = users.state', 'left');
+                $this->db->join('district', 'district.id = users.district', 'left');
+                $this->db->join('state as office_state', 'office_state.id = users.office_state', 'left');
+                $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
+                $this->db->join('user_membership as um', 'um.id = users.membership_id', 'left');
+                $this->db->join('membership as m', 'm.id = um.membership_id', 'left');
+                $this->db->from('users');
 
                 
                 if(!empty($order))
