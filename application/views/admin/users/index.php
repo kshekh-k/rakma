@@ -99,10 +99,22 @@
                                     </div>
 
                                      <div class="col-sm-2  mb-2">
+                                          <select class="form-control" name="membership_status">
+                                            <option value="">Membership Status (All)</option>
+                                            <option value="live" <?php echo (isset($section_heading) && strpos($section_heading, 'Active') !== false) ? 'selected' : ''; ?>>Live / Active (All)</option>
+                                            <option value="active_2year">Active (2-Year Only)</option>
+                                            <option value="expired" <?php echo (isset($section_heading) && strpos($section_heading, 'Expired') !== false) ? 'selected' : ''; ?>>Expired</option>
+                                            <option value="lifetime" <?php echo (isset($section_heading) && strpos($section_heading, 'Lifetime') !== false) ? 'selected' : ''; ?>>Lifetime</option>
+                                        </select>
+                                    </div>
+
+                                     <div class="col-sm-2  mb-2">
                                           <select class="form-control" name="membership_type">
-                                            <option value="">Membership type</option>
-                                            <option value="200">Active (RS 200) </option>
+                                            <option value="">Membership Fee</option>
+                                            <option value="200">Active (Rs 200) </option>
                                             <option value="50">General  (Rs 50)</option>
+                                            <option value="3100">Lifetime (Rs 3100)</option>
+                                            <option value="2100">Lifetime (Rs 2100)</option>
                                         </select>
                                     </div>
 
@@ -135,13 +147,15 @@
 												                        <th>Home District</th>												
                                                 <th>Ref. Details</th>
                                                 <th>Membership</th>
-                                                <th>Type of Amount</th>
-                                                <th>Transfer Amount</th>
+                                                <th>Type</th>
+                                                <th>Start Date</th>
+                                                <th>Expiry Date</th>
+                                                <th>Membership Status</th>
                                                 <th>Payment Status</th>
-                                                <th>Register Date</th>
-                                                <th>Status</th>                                               
+                                                <th>Approval</th>
+                                                <th>Registered Date</th>
                                                 <th>Action</th>
-                                              
+                                               
                                                
                                             </tr>
                                         </thead>
@@ -163,7 +177,7 @@
                                                         <img src="<?php  echo base_url('/uploads/'.$value["image"]) ?>" width="50px">
 
 
-                                                    <?php }  ?>
+                                                     <?php }  ?>
                                                 </td>
                                             
                                                
@@ -181,52 +195,62 @@
                                             </td>
 
                                             <td>
-                                                <?php echo $value['membership_name']; ?>
-                                                &#x20B9;<?php echo $value['m_price']; ?>
+                                                <?php echo $value['membership_name']; ?><br>
+                                                <small class="text-muted">&#x20B9;<?php echo $value['m_price']; ?></small>
                                             </td>
 
-                                               <td>
+                                            <td>
+                                                <?php if($value['m_type'] == 'Join'){ ?>
+                                                    <span class="badge badge-pill badge-success">New Joining</span>
+                                                <?php } elseif($value['m_type'] == 'Upgrade' || $value['m_type'] == 'Upgraded'){ ?>
+                                                    <span class="badge badge-pill badge-info">Upgraded</span>
+                                                <?php } elseif($value['m_type'] == 'Renew' || $value['m_type'] == 'Renewed'){ ?>
+                                                    <span class="badge badge-pill badge-warning">Renewed</span>
+                                                <?php } elseif($value['m_type'] == 'Lifetime'){ ?>
+                                                    <span class="badge badge-pill badge-primary">Lifetime</span>
+                                                <?php } ?>
+                                            </td>
 
-                                                 
+                                            <td>
+                                                <?php 
+                                                    $startDate = (!empty($value['membership_date']) && $value['membership_date'] != '0000-00-00 00:00:00') ? $value['membership_date'] : $value['create_at'];
+                                                    echo date('d-M-Y', strtotime($startDate)); 
+                                                ?>
+                                            </td>
 
-                                                      <?php if($value['m_type'] == 'Join'){ ?>
+                                            <td>
+                                                <?php 
+                                                    if ($value['m_type'] == 'Lifetime') {
+                                                        echo '<span class="badge badge-pill badge-primary">Lifetime</span>';
+                                                    } else {
+                                                        $expiryDate = !empty($value['membership_expiry_date']) ? $value['membership_expiry_date'] : date('Y-m-d H:i:s', strtotime('+2 years', strtotime($startDate)));
+                                                        if (strtotime($expiryDate) < time()) {
+                                                            echo '<span class="badge badge-pill badge-danger">' . date('d-M-Y', strtotime($expiryDate)) . '</span>';
+                                                        } else {
+                                                            echo '<span class="badge badge-pill badge-info">' . date('d-M-Y', strtotime($expiryDate)) . '</span>';
+                                                        }
+                                                    }
+                                                ?>
+                                            </td>
 
-                                                       <span class="badge badge-pill badge-success">New Joining</span>
-                                                   <?php }?>
+                                            <td>
+                                                <?php 
+                                                    if ($value['m_type'] == 'Lifetime') {
+                                                        echo '<span class="badge badge-pill badge-success">Active</span>';
+                                                    } else {
+                                                        $expiryDate = !empty($value['membership_expiry_date']) ? $value['membership_expiry_date'] : date('Y-m-d H:i:s', strtotime('+2 years', strtotime($startDate)));
+                                                        if (strtotime($expiryDate) < time()) {
+                                                            echo '<span class="badge badge-pill badge-danger">Expired</span>';
+                                                        } else {
+                                                            echo '<span class="badge badge-pill badge-success">Active</span>';
+                                                        }
+                                                    }
+                                                ?>
+                                            </td>
 
-                                                     <?php if($value['m_type'] == 'Upgraded'){ ?>
-
-                                                      <span class="badge badge-pill badge-info">Upgraded</span>
-                                                   <?php } ?>
-
-                                                      <?php if($value['m_type'] == 'Lifetime'){ ?>
-
-                                                      <span class="badge badge-pill badge-info">Lifetime</span>
-                                                   <?php }?>
-
-                                                       
-
-
-                                           
-
-                                                </td>
-
-                                                <td>
-                                                    <?php echo ($value['m_price'] != '') ? '&#x20B9;'.$value['m_price'] : ""; ?>
-                                                        
-                                                    </td>
-
-                                                  <td> 
-                                                    <!-- <?php if($value['payment_status'] == 'Complete') { ?>
-                                                         <span class="badge badge-pill badge-success">Completed</span>
-                                                 <?php  }elseif($value['payment_status'] == 'authorized'){ ?>
-                                                     <a href="<?php echo base_url('admin/transaction/paymentst/'.$value['id']); ?>"><span class="badge badge-pill badge-primary"><?php echo $value['payment_status']; ?> </span></a>
-                                                   <?php  }elseif($value['payment_status'] == 'Refunded'){  ?>
-                                                     <span class="badge badge-pill badge-danger"><?php echo $value['payment_status']; ?> </span>
-                                                   <?php }  ?> -->
-                                                   
-   <span class="badge badge-pill badge-success">Completed</span>
-                                                     </td>
+                                            <td> 
+                                                <span class="badge badge-pill badge-success">Completed</span>
+                                            </td>
 
                                              
                                                 <td>
@@ -301,19 +325,21 @@
                                         <tfoot>
                                              <tr>
                                                 <th>S.N.</th>
-                                               
                                                 <th>Name</th>
-                                                 <th>Photo</th>
+                                                <th>Photo</th>
                                                 <th>Phone</th>
-												<th>Post Name</th>
+                                                <th>Post Name</th>
                                                 <th>Post District</th>
-												<th>Home District</th>												
+                                                <th>Home District</th>
                                                 <th>Ref. Details</th>
                                                 <th>Membership</th>
-                                                <th>Type of Amount</th>
-                                                <th>Transfer Amount</th>
+                                                <th>Type</th>
+                                                <th>Start Date</th>
+                                                <th>Expiry Date</th>
+                                                <th>Membership Status</th>
                                                 <th>Payment Status</th>
-                                                <th>Status</th>                                               
+                                                <th>Approval</th>
+                                                <th>Registered Date</th>
                                                 <th>Action</th>
                                             </tr>
                                         </tfoot>

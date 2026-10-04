@@ -117,6 +117,8 @@
                  <ul class="uppercase space-y-3 text-sm font-semibold">
                      <li><a href="<?php echo base_url('/register'); ?>"
                              class="text-gray-500 hover:text-secondary">Membership</a></li>
+                     <li><a href="<?php echo base_url('/page/membershiprenew'); ?>"
+                             class="text-gray-500 hover:text-secondary">Renew Membership</a></li>
                      <li><a href="<?php echo base_url('/page/membershipupgrade'); ?>"
                              class="text-gray-500 hover:text-secondary">Upgrade Membership</a></li>
                      <!-- <li><a href="<?php echo base_url('/page/mahasamitijoin'); ?>"  class="text-gray-500 hover:text-secondary" >Mahasamiti Form</a></li> -->

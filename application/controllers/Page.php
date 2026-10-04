@@ -260,6 +260,15 @@ public function insertdonation()
 		$this->load->view('site/layout/footer');
 	}
 
+	public function membershiprenew()
+	{
+		$data = array();
+		$data['title'] = 'membership-renew';
+		$this->load->view('site/layout/header');
+		$this->load->view('site/pages/membership-renew', $data);
+		$this->load->view('site/layout/footer');
+	}
+
 
 public function checkmembershipalredy()
 	{
@@ -337,14 +346,22 @@ public function upgrademembership()
 				$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2" role="alert"> Opps somthing wrong</div>';
 			}else
 			{
-				$Activemenbership = $this->common->getSingleRecordByFieldName(array('user_id'=> $_POST['userid'] , 'membership_status' =>'Active'), $table='user_membership');
+				$user = $this->common->getSingleRecordByFieldName(array('id' => $_POST['userid']), 'users');
+				$Activemenbership = null;
+				if ($user && !empty($user['membership_id'])) {
+					$Activemenbership = $this->common->getSingleRecordByFieldName(array('id' => $user['membership_id']), 'user_membership');
+				}
+				if (!$Activemenbership) {
+					$Activemenbership = $this->common->getSingleRecordByFieldName(array('user_id' => $_POST['userid'], 'membership_status' => 'Active'), 'user_membership');
+				}
+
 				if ($Activemenbership) {
 
 					if ($Activemenbership['type'] === 'Lifetime') {
 						$output['status'] = true;
-						$output['data'] = '<div class="relative p-4 border border-green-500 rounded text-green-700 bg-green-50 font-semibold shadow-md my-2" role="alert">You already have Lifetime Membership. Currently, no upgrade is required.</div>';
+						$output['data'] = '<div class="relative p-4 border border-green-500 rounded text-green-700 bg-green-50 font-semibold shadow-md my-2" role="alert">You have a Life Time membership and currently, you dont need to upgrade.</div>';
 					} else {
-						$getmembershipforuser = $this->common->getAllRecordsByFieldName(array('type' => 'Lifetime', 'status' => '1'), $table='membership', 'price ASC');
+						$getmembershipforuser = $this->common->getAllRecordsByFieldName(array('type' => 'Lifetime', 'status' => '1'), 'membership', 'price ASC');
 						if ($getmembershipforuser) {
 							$output['status'] = true;
 							$output['data'] = $this->load->view('site/section/upgrade', array('membership_list' => $getmembershipforuser), true);
@@ -493,13 +510,16 @@ public function updatemembership()
 			$this->common->updateByColumn(array('user_id' => $_POST['userid']), $updatedataold, 'user_membership');
 
 			
+			$type = ($_POST['id'] == 3) ? 'Lifetime' : 'Upgrade';
+			$membership_date = current_date();
 			$membership = array(
-				'price'             => $getprice['price'],
-				'membership_id'     => $_POST['id'],
-				'user_id'           => $_POST['userid'],
-				'membership_status' => 'Active',
-				'type'              => ($_POST['id'] == 3) ? 'Lifetime' : 'Upgrade',
-				'membership_date'   => current_date(),
+				'price'                  => $getprice['price'],
+				'membership_id'          => $_POST['id'],
+				'user_id'                => $_POST['userid'],
+				'membership_status'      => 'Active',
+				'type'                   => $type,
+				'membership_date'        => $membership_date,
+				'membership_expiry_date' => ($type == 'Lifetime') ? NULL : date('Y-m-d H:i:s', strtotime('+2 years', strtotime($membership_date))),
 			);
 			$membership_id = $this->common->insert('user_membership', $membership);
 			if (!$membership_id) {
@@ -581,6 +601,382 @@ public function updatemembership()
 	}
 
 
+	public function checkmembershiprenew()
+	{
+		$output = array();
+		$output['status'] = false;
+		$output['data'] = '';
+		$output['msg'] = '';
+
+		if (isset($_POST['mobile'])) {
+			$input = trim($_POST['mobile']);
+			if (empty($input)) {
+				$output['status'] = true;
+				$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2" role="alert">Please insert registered mobile number</div>';
+			} else {
+				$userDetails = $this->common->getsingleUsersByCondtion(array('users.phone' => $input, 'users.verify !=' => '2'));
+				if (!$userDetails && is_numeric($input)) {
+					$userDetails = $this->common->getsingleUsersByCondtion(array('users.id' => $input, 'users.verify !=' => '2'));
+				}
+
+				if ($userDetails) {
+					// Get user_membership record
+					$user_membership = null;
+					if (!empty($userDetails['membership_id'])) {
+						$user_membership = $this->common->getSingleRecordByFieldName(array('id' => $userDetails['membership_id']), 'user_membership');
+					}
+					if (!$user_membership) {
+						$this->db->where('user_id', $userDetails['id']);
+						$this->db->order_by('id', 'DESC');
+						$user_membership = $this->db->get('user_membership')->row_array();
+					}
+
+					// Get membership plan details
+					$membership_plan = null;
+					if ($user_membership && !empty($user_membership['membership_id'])) {
+						$membership_plan = $this->common->getSingleRecordByFieldName(array('id' => $user_membership['membership_id']), 'membership');
+					}
+					if (!$membership_plan && !empty($userDetails['membership_name'])) {
+						$plan_name = $userDetails['membership_name'];
+					} elseif ($membership_plan) {
+						$plan_name = $membership_plan['name'];
+					} else {
+						$plan_name = '2 years membership';
+					}
+
+					$name = trim($userDetails['first_name'] . ' ' . $userDetails['middle_name'] . ' ' . $userDetails['last_name']);
+					$father_husband_name = $userDetails['father_husband_name'];
+					$post = !empty($userDetails['post_name']) ? $userDetails['post_name'] : $userDetails['post_type'];
+					$district = $userDetails['district_name'];
+					$mobile = $userDetails['phone'];
+					$id = $userDetails['id'];
+
+					// Check active vs expired
+					$now = date('Y-m-d H:i:s');
+					$is_lifetime = ($user_membership && $user_membership['type'] === 'Lifetime');
+					$is_expired = false;
+					$status_badge = '';
+					$action_html = '';
+					$expiry_text = '';
+
+					if ($is_lifetime) {
+						$status_badge = '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-green-100 text-green-800 border border-green-300">Active (Lifetime)</span>';
+						$action_html = '
+							<div class="col-span-2 pt-2">
+								<div class="relative p-4 border border-green-500 rounded text-green-700 bg-green-50 font-semibold shadow-sm my-2 text-left" role="alert">
+									You have a Life Time membership and currently, your membership never expires. Renewal is not required.
+								</div>
+							</div>';
+					} else {
+						$expiry_date = null;
+						if ($user_membership && !empty($user_membership['membership_expiry_date'])) {
+							$expiry_date = $user_membership['membership_expiry_date'];
+						} elseif ($user_membership && !empty($user_membership['membership_date'])) {
+							$expiry_date = date('Y-m-d H:i:s', strtotime('+2 years', strtotime($user_membership['membership_date'])));
+						} elseif (!empty($userDetails['membership_join_date'])) {
+							$expiry_date = date('Y-m-d H:i:s', strtotime('+2 years', strtotime($userDetails['membership_join_date'])));
+						}
+
+						if ($expiry_date) {
+							$expiry_text = date('d-m-Y', strtotime($expiry_date));
+							if ($expiry_date < $now || ($user_membership && $user_membership['membership_status'] === 'Inactive')) {
+								$is_expired = true;
+								$status_badge = '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-red-100 text-red-800 border border-red-300">Expired (' . $expiry_text . ')</span>';
+							} else {
+								$is_expired = false;
+								$status_badge = '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-green-100 text-green-800 border border-green-300">Active (Valid till: ' . $expiry_text . ')</span>';
+							}
+						} else {
+							$is_expired = true;
+							$status_badge = '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-red-100 text-red-800 border border-red-300">Expired</span>';
+						}
+
+						if ($is_expired) {
+							$action_html = '
+								<div class="col-span-2 pt-2">
+									<div class="relative p-3 sm:p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-sm my-2 text-left" role="alert">
+										Your membership has <strong>Expired</strong>' . (!empty($expiry_text) ? ' on ' . $expiry_text : '') . '. Please confirm your details below to renew with your current membership option.
+									</div>
+									<label class="flex items-center text-left space-x-2 font-medium text-sm sm:text-base text-gray-700 cursor-pointer pt-3">
+										<input type="checkbox" name="confirm_renew_check" id="confirm_renew_check" class="form-radio h-6 w-6 shadow-inner border border-gray-300 text-blues focus:ring-blues">
+										<input type="hidden" value="' . $id . '" id="user__id">
+										<span>Confirm: if the above information is correct and you want to renew</span>
+									</label>
+								</div>';
+						} else {
+							$action_html = '
+								<div class="col-span-2 pt-2">
+									<div class="relative p-3 sm:p-4 border border-blue-500 rounded text-blue-700 bg-blue-50 font-semibold shadow-sm my-2 text-left" role="alert">
+										Your membership is currently <strong>Active</strong> and valid until <strong>' . $expiry_text . '</strong>. Renewal is only required once your membership has expired.
+									</div>
+								</div>';
+						}
+					}
+
+					$html = '
+						<div class="sm:grid sm:grid-cols-2 gap-4 p-4 xs:p-7 max-w-xl mx-auto bg-gray-100 rounded-lg mt-5 space-y-3 sm:space-y-0 text-left border border-gray-200 shadow-sm">
+							<div class="text-gray-700 font-semibold"><label class="font-medium text-xs text-gray-500 uppercase pb-1 block">Name:</label>' . htmlspecialchars($name) . '</div>
+							<div class="text-gray-700 font-semibold"><label class="font-medium text-xs text-gray-500 uppercase pb-1 block">Father/Husband Name:</label>' . htmlspecialchars($father_husband_name) . '</div>
+							<div class="text-gray-700 font-semibold"><label class="font-medium text-xs text-gray-500 uppercase pb-1 block">Post:</label>' . htmlspecialchars($post) . '</div>
+							<div class="text-gray-700 font-semibold"><label class="font-medium text-xs text-gray-500 uppercase pb-1 block">District:</label>' . htmlspecialchars($district) . '</div>
+							<div class="text-gray-700 font-semibold"><label class="font-medium text-xs text-gray-500 uppercase pb-1 block">Mobile No.:</label>' . htmlspecialchars($mobile) . '</div>
+							<div class="text-gray-700 font-semibold"><label class="font-medium text-xs text-gray-500 uppercase pb-1 block">Current Plan:</label>' . htmlspecialchars($plan_name) . '</div>
+							<div class="sm:col-span-2 text-gray-700 font-semibold"><label class="font-medium text-xs text-gray-500 uppercase pb-1 block">Membership Status:</label>' . $status_badge . '</div>
+							' . $action_html . '
+						</div>
+						<input type="hidden" id="username" value="' . htmlspecialchars($name, ENT_QUOTES) . '">
+						<input type="hidden" id="mobile" value="' . htmlspecialchars($mobile, ENT_QUOTES) . '">
+					';
+
+					$output['status'] = true;
+					$output['data'] = $html;
+				} else {
+					$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2" role="alert">This Mobile number / Member ID is not registered.</div>';
+				}
+			}
+		}
+		echo json_encode($output);
+	}
+
+	public function renewmembership()
+	{
+		$output = array();
+		$output['status'] = false;
+		$output['data'] = '';
+		$output['msg'] = '';
+
+		if (isset($_POST['userid']) && !empty($_POST['userid'])) {
+			$user = $this->common->getSingleRecordByFieldName(array('id' => $_POST['userid']), 'users');
+			if (!$user) {
+				$output['status'] = true;
+				$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2" role="alert">User not found.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			$user_membership = null;
+			if (!empty($user['membership_id'])) {
+				$user_membership = $this->common->getSingleRecordByFieldName(array('id' => $user['membership_id']), 'user_membership');
+			}
+			if (!$user_membership) {
+				$this->db->where('user_id', $_POST['userid']);
+				$this->db->order_by('id', 'DESC');
+				$user_membership = $this->db->get('user_membership')->row_array();
+			}
+
+			if ($user_membership && $user_membership['type'] === 'Lifetime') {
+				$output['status'] = true;
+				$output['data'] = '<div class="relative p-4 border border-green-500 rounded text-green-700 bg-green-50 font-semibold shadow-md my-2" role="alert">You have a Life Time membership and currently, you do not need to renew.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			// Check if active and not expired
+			$now = date('Y-m-d H:i:s');
+			$expiry_date = null;
+			if ($user_membership && !empty($user_membership['membership_expiry_date'])) {
+				$expiry_date = $user_membership['membership_expiry_date'];
+			} elseif ($user_membership && !empty($user_membership['membership_date'])) {
+				$expiry_date = date('Y-m-d H:i:s', strtotime('+2 years', strtotime($user_membership['membership_date'])));
+			}
+
+			if ($expiry_date && $expiry_date >= $now && $user_membership['membership_status'] === 'Active') {
+				$output['status'] = true;
+				$output['data'] = '<div class="relative p-4 border border-blue-500 rounded text-blue-700 bg-blue-50 font-semibold shadow-md my-2" role="alert">Your membership is currently active until ' . date('d-m-Y', strtotime($expiry_date)) . ' and does not need renewal yet.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			// Fetch their current membership plan
+			$current_membership = null;
+			if ($user_membership && !empty($user_membership['membership_id'])) {
+				$current_membership = $this->common->getSingleRecordByFieldName(array('id' => $user_membership['membership_id']), 'membership');
+			}
+
+			// If current membership is inactive or not found, fallback to active 2-year membership plan
+			if (!$current_membership || $current_membership['status'] != '1') {
+				$current_membership = $this->common->getSingleRecordByFieldName(array('type' => 'Upgrade', 'status' => '1'), 'membership', 'id ASC');
+			}
+
+			if ($current_membership) {
+				$output['status'] = true;
+				$output['data'] = $this->load->view('site/section/renew', array('membership' => $current_membership), true);
+			} else {
+				$output['status'] = true;
+				$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2" role="alert">No renewal options are currently available. Please contact admin.</div>';
+			}
+		} else {
+			$output['status'] = true;
+			$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2" role="alert">Oops, something went wrong.</div>';
+		}
+
+		echo json_encode($output);
+	}
+
+	public function updaterenewmembership()
+	{
+		$output = array();
+		$output['status'] = false;
+		$output['data'] = '';
+		$output['msg'] = '';
+
+		log_message('error', 'RENEW POST: ' . json_encode($_POST));
+
+		if (
+			(isset($_POST['userid']) && !empty($_POST['userid'])) &&
+			(isset($_POST['id']) && !empty($_POST['id'])) &&
+			(isset($_POST['payment_id']) && !empty($_POST['payment_id']))
+		) {
+			$_POST['payment_id'] = trim($_POST['payment_id']);
+
+			$existing = $this->common->getSingleRecordByFieldName(
+				array('payment_id' => $_POST['payment_id']),
+				'transaction'
+			);
+
+			if ($existing) {
+				$output['status'] = true;
+				$output['data'] = '<div class="relative p-4 border border-blue-500 rounded text-blue-700 bg-blue-50 font-semibold shadow-md my-2">This payment was already processed.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			try {
+				$paymentRes = get_order($_POST['payment_id']);
+			} catch (Exception $e) {
+				log_message('error', 'Renewal payment API error: ' . $e->getMessage());
+				$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2">Payment API error</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			if (!$paymentRes) {
+				$output['status'] = false;
+				$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2">Payment verification failed.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			$paymentstatus = $paymentRes['status'];
+			if (!in_array($paymentstatus, ['authorized', 'captured'])) {
+				$output['status'] = false;
+				$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2">Invalid payment status: ' . htmlspecialchars($paymentstatus) . '</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			$price = $paymentRes['amount'] / 100;
+			$phone = $paymentRes['contact'];
+
+			$member_data = $this->common->getSingleRecordByFieldName(array('id' => $_POST['userid']), 'users');
+			if (!$member_data) {
+				$output['status'] = false;
+				$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2">User not found.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			$getprice = $this->common->getSingleRecordByFieldName(array('id' => $_POST['id']), 'membership');
+			if (!$getprice) {
+				$output['status'] = false;
+				$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2">Membership plan not found.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			if ((float)$price !== (float)$getprice['price']) {
+				$output['status'] = false;
+				$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2">Payment amount mismatch.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			$insert = array(
+				'payment_id'     => $_POST['payment_id'],
+				'price'          => $price,
+				'membership_id'  => $_POST['id'],
+				'user_id'        => $_POST['userid'],
+				'payment_status' => ($paymentstatus == 'captured') ? 'Complete' : 'Authorized',
+				'type'           => 'Membership_Renew',
+				'name'           => trim($member_data['first_name'] . ' ' . $member_data['middle_name'] . ' ' . $member_data['last_name']),
+				'mobile'         => $phone,
+				'payment_date'   => current_date(),
+			);
+
+			$this->db->trans_start();
+
+			$txn_data_id = $this->common->insert('transaction', $insert);
+
+			// Mark previous memberships as Inactive
+			$this->common->updateByColumn(array('user_id' => $_POST['userid']), array('membership_status' => 'Inactive'), 'user_membership');
+
+			// Insert new renewed membership
+			$membership_date = current_date();
+			$membership = array(
+				'price'                  => $getprice['price'],
+				'membership_id'          => $_POST['id'],
+				'user_id'                => $_POST['userid'],
+				'membership_status'      => 'Active',
+				'type'                   => 'Renew',
+				'membership_date'        => $membership_date,
+				'membership_expiry_date' => date('Y-m-d H:i:s', strtotime('+2 years', strtotime($membership_date))),
+			);
+			$membership_id = $this->common->insert('user_membership', $membership);
+
+			$updatemembership_id = array(
+				'membership_id' => $membership_id,
+				'payment_id'    => $_POST['payment_id']
+			);
+			$this->common->update($_POST['userid'], $updatemembership_id, 'users');
+
+			$this->db->trans_complete();
+
+			if ($this->db->trans_status() === FALSE) {
+				log_message('error', 'Membership renew DB transaction failed');
+				$output['status'] = false;
+				$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2">Database transaction failed.</div>';
+				echo json_encode($output);
+				return;
+			}
+
+			if ($paymentstatus == 'captured') {
+				$this->common->update($txn_data_id, array('payment_status' => 'Complete'), 'transaction');
+			} else {
+				try {
+					$capture = capture($_POST['payment_id'], $price);
+				} catch (Exception $e) {
+					log_message('error', 'Capture failed: ' . $e->getMessage());
+					$capture = false;
+				}
+
+				if (!$capture) {
+					$output['status'] = false;
+					$output['data'] = '<div class="relative p-4 border border-yellow-500 rounded text-yellow-800 bg-yellow-50 font-semibold shadow-md my-2">Payment was authorized but capture failed. Please contact admin with Payment ID: ' . htmlspecialchars($_POST['payment_id']) . '</div>';
+					echo json_encode($output);
+					return;
+				}
+
+				$this->common->update($txn_data_id, array('payment_status' => 'Complete'), 'transaction');
+			}
+
+			log_message('error', 'STEP: Renewal completed successfully for payment: ' . $_POST['payment_id']);
+			$output['status'] = true;
+			$output['data'] = '<div class="relative p-6 border border-green-500 rounded-lg text-green-800 bg-green-50 font-semibold shadow-md my-4 text-center">
+				<h4 class="text-xl font-bold mb-2">🎉 Congratulations! Your membership has been renewed successfully.</h4>
+				<p class="text-gray-700 mb-4">Your membership validity has been extended by 2 years.</p>
+				<a href="' . base_url("home/pdf_m/" . $_POST['userid']) . '" target="_blank" class="inline-block bg-primary hover:bg-secondary text-white font-bold py-2 px-6 rounded shadow transition duration-200">Download Receipt (PDF)</a>
+			</div>';
+			echo json_encode($output);
+			return;
+		} else {
+			$output['status'] = false;
+			$output['data'] = '<div class="relative p-4 border border-red-500 rounded text-red-700 bg-red-50 font-semibold shadow-md my-2">Something went wrong. Please try again.</div>';
+			echo json_encode($output);
+			return;
+		}
+	}
+
+
 	public function lifeTimeMembership()
 	{
 		$response = array('success' => false, 'msg' => '');
@@ -620,6 +1016,18 @@ public function updatemembership()
 			return;
 		}
 
+		$user = $this->common->getSingleRecordByFieldName(array('id' => $userid), 'users');
+		if ($user && !empty($user['membership_id'])) {
+			$activeUm = $this->common->getSingleRecordByFieldName(array('id' => $user['membership_id']), 'user_membership');
+			if ($activeUm && $activeUm['type'] === 'Lifetime') {
+				log_message('error', 'lifeTimeMembership: user already lifetime: ' . $userid);
+				$response['success'] = true;
+				$response['msg'] = 'You have a Life Time membership and currently, you dont need to upgrade.';
+				echo json_encode($response);
+				return;
+			}
+		}
+
 		$existing = $this->common->getSingleRecordByFieldName(
 			array('user_id' => $userid, 'membership_id' => $membership_id, 'membership_status' => 'Active'),
 			'user_membership'
@@ -627,20 +1035,26 @@ public function updatemembership()
 		if ($existing) {
 			log_message('error', 'lifeTimeMembership: duplicate active membership for user: ' . $userid);
 			$response['success'] = true;
-			$response['msg'] = 'Your membership is already active.';
+			$response['msg'] = 'You have a Life Time membership and currently, you dont need to upgrade.';
 			echo json_encode($response);
 			return;
 		}
 
 		$this->db->trans_start();
 
+		$updatedataold = array(
+			'membership_status' => 'Inactive',
+		);
+		$this->common->updateByColumn(array('user_id' => $userid), $updatedataold, 'user_membership');
+
 		$membershipdata = array(
-			'price'             => $membership['price'],
-			'membership_id'     => $membership_id,
-			'user_id'           => $userid,
-			'membership_status' => 'Active',
-			'type'              => 'Lifetime',
-			'membership_date'   => current_date(),
+			'price'                  => $membership['price'],
+			'membership_id'          => $membership_id,
+			'user_id'                => $userid,
+			'membership_status'      => 'Active',
+			'type'                   => 'Lifetime',
+			'membership_date'        => current_date(),
+			'membership_expiry_date' => NULL,
 		);
 		$nsetmembership_id = $this->common->insert('user_membership', $membershipdata);
 

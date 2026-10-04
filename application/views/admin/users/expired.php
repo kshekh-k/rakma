@@ -101,14 +101,14 @@
                                      <div class="col-sm-2  mb-2">
                                           <select class="form-control" name="membership_status">
                                             <option value="">Membership Status (All)</option>
-                                            <option value="live" <?php echo (isset($section_heading) && strpos($section_heading, "Active") !== false) ? "selected" : ""; ?>>Live / Active</option>
+                                            <option value="live">Live / Active (All)</option>
                                             <option value="active_2year">Active (2-Year Only)</option>
-                                            <option value="expired" <?php echo (isset($section_heading) && strpos($section_heading, "Expired") !== false) ? "selected" : ""; ?>>Expired</option>
-                                            <option value="lifetime" <?php echo (isset($section_heading) && strpos($section_heading, "Lifetime") !== false) ? "selected" : ""; ?>>Lifetime</option>
+                                            <option value="expired" selected>Expired</option>
+                                            <option value="lifetime">Lifetime</option>
                                         </select>
                                     </div>
 
-                                    <div class="col-sm-2  mb-2">
+                                     <div class="col-sm-2  mb-2">
                                           <select class="form-control" name="membership_type">
                                             <option value="">Membership Fee</option>
                                             <option value="200">Active (Rs 200) </option>
@@ -142,35 +142,32 @@
                                                 <th>Photo</th>
                                                 
                                                 <th>Phone</th>
-                                                <th>Post Name</th>
+											                         	<th>Post Name</th>
                                                 <th>Post District</th>
-                                                <th>Home District</th>                                              
+												                        <th>Home District</th>												
                                                 <th>Ref. Details</th>
                                                 <th>Membership</th>
-                                                <th>Type of Amount</th>
-                                                <th>Transfer Amount</th>
+                                                <th>Type</th>
+                                                <th>Start Date</th>
+                                                <th>Expiry Date</th>
+                                                <th>Membership Status</th>
                                                 <th>Payment Status</th>
-                                                <th>Status</th>                                               
+                                                <th>Approval</th>
+                                                <th>Registered Date</th>
                                                 <th>Action</th>
-                                              
+                                               
                                                
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php if($rows){
-                                                 $cur_page  = ($this->pagination->cur_page > 0) ? $this->pagination->cur_page  : 1;
-                                                $serial_number = $cur_page * $this->pagination->per_page - 10;
-                                                echo $this->pagination->cur_page;
-                                                echo $serial_number;
-                                               $i=1; foreach ($rows as $key => $value) { 
-                                                   $serial_number++;
-                                                /*echo '<pre>'; print_r($value);*/  ?>
+                                               $i=1; foreach ($rows as $key => $value) { /*echo '<pre>'; print_r($value);*/ ?>
                                                    
                                               
                                             <tr>
                                                
                                                 <td>
-                                                   <?php echo $serial_number; ?>
+                                                   <?php echo $i; ?>
                                                 </td>
                                                  <td><?php echo $value['first_name']; ?> <?php echo $value['middle_name']; ?> <?php echo $value['last_name']; ?> </td>
                                                 <td>
@@ -180,16 +177,16 @@
                                                         <img src="<?php  echo base_url('/uploads/'.$value["image"]) ?>" width="50px">
 
 
-                                                    <?php }  ?>
+                                                     <?php }  ?>
                                                 </td>
                                             
                                                
                                                 <td><?php echo $value['phone']; ?></td>
-                                                <td><?php echo $value['post_name']; ?></td>
+												<td><?php echo $value['post_name']; ?></td>
                                                 <td><?php echo $value['office_district']; ?></td>
-                                                <td><?php echo $value['district']; ?></td>                              
-                                                  
-                                                <td>
+												<td><?php echo $value['district']; ?></td>								
+												  
+ 												<td>
 
                                                     <?php echo $value['ref_mobile']; ?><br>
                                                     <?php echo $value['ref_first_name']; ?>
@@ -198,51 +195,62 @@
                                             </td>
 
                                             <td>
-                                                <?php echo $value['membership_name']; ?>
-                                                &#x20B9;<?php echo $value['m_price']; ?>
+                                                <?php echo $value['membership_name']; ?><br>
+                                                <small class="text-muted">&#x20B9;<?php echo $value['m_price']; ?></small>
                                             </td>
 
-                                               <td>
+                                            <td>
+                                                <?php if($value['m_type'] == 'Join'){ ?>
+                                                    <span class="badge badge-pill badge-success">New Joining</span>
+                                                <?php } elseif($value['m_type'] == 'Upgrade' || $value['m_type'] == 'Upgraded'){ ?>
+                                                    <span class="badge badge-pill badge-info">Upgraded</span>
+                                                <?php } elseif($value['m_type'] == 'Renew' || $value['m_type'] == 'Renewed'){ ?>
+                                                    <span class="badge badge-pill badge-warning">Renewed</span>
+                                                <?php } elseif($value['m_type'] == 'Lifetime'){ ?>
+                                                    <span class="badge badge-pill badge-primary">Lifetime</span>
+                                                <?php } ?>
+                                            </td>
 
-                                                 
+                                            <td>
+                                                <?php 
+                                                    $startDate = (!empty($value['membership_date']) && $value['membership_date'] != '0000-00-00 00:00:00') ? $value['membership_date'] : $value['create_at'];
+                                                    echo date('d-M-Y', strtotime($startDate)); 
+                                                ?>
+                                            </td>
 
-                                                      <?php if($value['m_type'] == 'Join'){ ?>
+                                            <td>
+                                                <?php 
+                                                    if ($value['m_type'] == 'Lifetime') {
+                                                        echo '<span class="badge badge-pill badge-primary">Lifetime</span>';
+                                                    } else {
+                                                        $expiryDate = !empty($value['membership_expiry_date']) ? $value['membership_expiry_date'] : date('Y-m-d H:i:s', strtotime('+2 years', strtotime($startDate)));
+                                                        if (strtotime($expiryDate) < time()) {
+                                                            echo '<span class="badge badge-pill badge-danger">' . date('d-M-Y', strtotime($expiryDate)) . '</span>';
+                                                        } else {
+                                                            echo '<span class="badge badge-pill badge-info">' . date('d-M-Y', strtotime($expiryDate)) . '</span>';
+                                                        }
+                                                    }
+                                                ?>
+                                            </td>
 
-                                                       <span class="badge badge-pill badge-success">New Joining</span>
-                                                   <?php } elseif($value['m_type'] == 'Upgrade' || $value['m_type'] == 'Upgraded'){ ?>
+                                            <td>
+                                                <?php 
+                                                    if ($value['m_type'] == 'Lifetime') {
+                                                        echo '<span class="badge badge-pill badge-success">Active</span>';
+                                                    } else {
+                                                        $expiryDate = !empty($value['membership_expiry_date']) ? $value['membership_expiry_date'] : date('Y-m-d H:i:s', strtotime('+2 years', strtotime($startDate)));
+                                                        if (strtotime($expiryDate) < time()) {
+                                                            echo '<span class="badge badge-pill badge-danger">Expired</span>';
+                                                        } else {
+                                                            echo '<span class="badge badge-pill badge-success">Active</span>';
+                                                        }
+                                                    }
+                                                ?>
+                                            </td>
 
-                                                      <span class="badge badge-pill badge-info">Upgraded</span>
-                                                   <?php } elseif($value['m_type'] == 'Renew' || $value['m_type'] == 'Renewed'){ ?>
-
-                                                      <span class="badge badge-pill badge-warning">Renewed</span>
-                                                   <?php } elseif($value['m_type'] == 'Lifetime'){ ?>
-
-                                                      <span class="badge badge-pill badge-info">Lifetime</span>
-                                                   <?php }?>
-
-                                                       
-
-
-                                           
-
-                                                </td>
-
-                                               <!--  <td>
-                                                    <?php echo ($value['txn_amount'] != '') ? '&#x20B9;'.$value['txn_amount'] : ""; ?>
-                                                        
-                                                    </td> -->
-
-                                                 <!--  <td> 
-                                                    <?php if($value['payment_status'] == 'Complete') { ?>
-                                                         <span class="badge badge-pill badge-success">Completed</span>
-                                                 <?php  }elseif($value['payment_status'] == 'authorized'){ ?>
-                                                     <a href="<?php echo base_url('admin/transaction/paymentst/'.$value['id']); ?>"><span class="badge badge-pill badge-primary"><?php echo $value['payment_status']; ?> </span></a>
-                                                   <?php  }elseif($value['payment_status'] == 'Refunded'){  ?>
-                                                     <span class="badge badge-pill badge-danger"><?php echo $value['payment_status']; ?> </span>
-                                                   <?php }  ?>
-                                                   
-
-                                                     </td> -->
+                                            <td> 
+                                                <span class="badge badge-pill badge-success">Completed</span>
+                                            </td>
 
                                              
                                                 <td>
@@ -268,25 +276,17 @@
                                                         <?php echo  ($value['verify'] == '2') ? 'btn-danger dropdown-toggle' : $class; ?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><?php echo  $st; ?></button>
                                                         <div class="dropdown-menu">
 
-                                                           <?php if($value['m_type'] == 'Lifetime'){ ?>
-
-                                                     
-                                                          <a  href="javascript:void(0);" class="dropdown-item" data-st="0" onclick="memberlifetime_st__confirm('0' , <?php echo $value['id']; ?>);" data-id="<?php echo $value['id']; ?>" href="">Pending</a>
-                              
-                                                          <a  href="javascript:void(0);" class="dropdown-item"data-st="1"   onclick="memberlifetime_st__confirm('1' , <?php echo $value['id']; ?>);" data-id="<?php echo $value['id']; ?>" href="#">Approve</a>
-                              
-                                                           <a  href="javascript:void(0);" class="dropdown-item" data-st="2" onclick="memberlifetime_st__confirm('2' , <?php echo $value['id']; ?>);"  data-id="<?php echo $value['id']; ?>" href="#">Reject</a>
-
-
-                                                   <?php }else {?>
+                                                         
 
 
                                                           <a  href="javascript:void(0);" class="dropdown-item" data-st="0" onclick="member_st__confirm('0' , <?php echo $value['id']; ?>);" data-id="<?php echo $value['id']; ?>" href="">Pending</a>
-                                                            
+															
                                                           <a  href="javascript:void(0);" class="dropdown-item"data-st="1"   onclick="member_st__confirm('1' , <?php echo $value['id']; ?>);" data-id="<?php echo $value['id']; ?>" href="#">Approve</a>
-                                                            
+															
                                                            <a  href="javascript:void(0);" class="dropdown-item" data-st="2" onclick="member_st__confirm('2' , <?php echo $value['id']; ?>);"  data-id="<?php echo $value['id']; ?>" href="#">Reject</a>
-                                                         <?php } ?>
+
+                                                           
+                                                      
                                                       </div>
                                                     </div>
 
@@ -294,15 +294,17 @@
 
                                               
 
-                                                     
+                                                <td> 
+                                                 <?php 
+                                                    $date = new DateTime($value['create_at']); 
+                                                    echo $date->format('F j, Y'); // Example: March 10, 2022, 5:16 pm
+                                                    ?>
+                                                </td>
                                                 
                                                 <td class="">
                                                     <div class="d-flex flex-wrap flex-xl-nowrap align-content-center">
 
-                                                   <?php if($value['m_type'] == 'Lifetime'){ ?>
-                                                            <button data-id="<?php echo $value['id']; ?>" class="btn btn-primary btn-sm mr-1 mb-2 mb-xl-0 uplaodrecipt">Upload Receipt</button>
-                                                   <?php } ?>
-
+                                                   
  
                                                   <a href="<?php echo base_url('admin/user/view/'.$value['id']) ?>" class="btn btn-primary btn-sm mr-1 mb-2 mb-xl-0">View Details</a>
 
@@ -323,25 +325,27 @@
                                         <tfoot>
                                              <tr>
                                                 <th>S.N.</th>
-                                               
                                                 <th>Name</th>
-                                                 <th>Photo</th>
+                                                <th>Photo</th>
                                                 <th>Phone</th>
                                                 <th>Post Name</th>
                                                 <th>Post District</th>
-                                                <th>Home District</th>                                              
+                                                <th>Home District</th>
                                                 <th>Ref. Details</th>
                                                 <th>Membership</th>
-                                                <th>Type of Amount</th>
-                                               <!--  <th>Transfer Amount</th>
-                                                <th>Payment Status</th> -->
-                                                <th>Status</th>                                               
+                                                <th>Type</th>
+                                                <th>Start Date</th>
+                                                <th>Expiry Date</th>
+                                                <th>Membership Status</th>
+                                                <th>Payment Status</th>
+                                                <th>Approval</th>
+                                                <th>Registered Date</th>
                                                 <th>Action</th>
                                             </tr>
                                         </tfoot>
                                     </table>
                                 </div>
-                                  <?php echo $this->pagination->create_links(); ?>
+
                             </div>
                         </div>
                     </div>

@@ -49,21 +49,64 @@ function formatNumber($num) {
                 <div class="row">
 
                     <div class="col-12">
-                          <h4 class="card-title">Total Counts</h4>
+                          <h4 class="card-title">Membership Status</h4>
                     </div>
 
-                     <!-- Column -->
-                    <div class="col-md-6 col-lg-2 col-xlg-3">
+                    <!-- Column -->
+                    <div class="col-md-6 col-lg-3 col-xlg-3">
                     <a href="<?php echo base_url('admin/user'); ?>">
                         <div class="card card-hover">
-                            <div class="box bg-primary text-center">
-                                <h3 class="font-light text-white"><?php echo countdata('users' , array('role'=>'User')); ?></h3>
-                                <h6 class="text-white">Total Members</h6>
+                            <div class="box bg-success text-center">
+                                <h3 class="font-light text-white"><?php echo !empty($active_members_count) ? $active_members_count : 0; ?></h3>
+                                <h6 class="text-white">Active Members</h6>
                             </div>
                         </div>
                     </a>
                     </div>
                     <!-- Column -->
+
+                    <!-- Column -->
+                    <div class="col-md-6 col-lg-3 col-xlg-3">
+                    <a href="<?php echo base_url('admin/user/lifetimememberships'); ?>">
+                        <div class="card card-hover">
+                            <div class="box bg-primary text-center">
+                                <h3 class="font-light text-white"><?php echo !empty($lifetime_members_count) ? $lifetime_members_count : 0; ?></h3>
+                                <h6 class="text-white">Lifetime Members</h6>
+                            </div>
+                        </div>
+                    </a>
+                    </div>
+                    <!-- Column -->
+
+                    <!-- Column -->
+                    <div class="col-md-6 col-lg-3 col-xlg-3">
+                    <a href="<?php echo base_url('admin/user/expiredmembers'); ?>">
+                        <div class="card card-hover">
+                            <div class="box bg-danger text-center">
+                                <h3 class="font-light text-white"><?php echo !empty($expired_members_count) ? $expired_members_count : 0; ?></h3>
+                                <h6 class="text-white">Expired Members</h6>
+                            </div>
+                        </div>
+                    </a>
+                    </div>
+                    <!-- Column -->
+
+                    <!-- Column -->
+                    <div class="col-md-6 col-lg-3 col-xlg-3">
+                    <a href="<?php echo base_url('admin/user'); ?>">
+                        <div class="card card-hover">
+                            <div class="box bg-cyan text-center">
+                                <h3 class="font-light text-white"><?php echo !empty($total_members_count) ? $total_members_count : countdata('users' , array('role'=>'User')); ?></h3>
+                                <h6 class="text-white">Total Registered</h6>
+                            </div>
+                        </div>
+                    </a>
+                    </div>
+                    <!-- Column -->
+
+                    <div class="col-12 mt-3">
+                          <h4 class="card-title">Activities & Transactions</h4>
+                    </div>
 
 
                        <!-- Column -->
@@ -196,7 +239,7 @@ echo formatNumber(!empty($donation_info['total_donation']) ? $donation_info['tot
                             <div class="col-md-6">
 								 <div class="card">
                      			<div class="card-header d-flex align-items-center">
-                                <h4 class="card-title">Latest 10 Registered Members</h4>
+                                <h4 class="card-title">Latest 10 Active Members</h4>
 									<a href="<?php echo base_url('/admin/user') ?>" class="btn btn-primary btn-sm mr-0 ml-auto">View</a>
 								</div>
 								<div class="card-body">

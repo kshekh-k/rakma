@@ -57,8 +57,17 @@ class Our_model extends CI_Model {
                     // $this->db->where('users.verify !=', '2');
                  //$this->db->where('user_membership.type !=','Lifetime');
 
-            $this->db->where_in('user_membership.type', ['Join','Upgrade']);
+            $this->db->where_in('user_membership.type', ['Join','Upgrade','Renew']);
             $this->db->where('user_membership.membership_status', 'Active');
+
+            $now = date('Y-m-d H:i:s');
+            $this->db->group_start();
+            $this->db->where('user_membership.membership_expiry_date >=', $now);
+            $this->db->or_group_start();
+            $this->db->where('user_membership.membership_expiry_date IS NULL', null, false);
+            $this->db->where("DATE_ADD(user_membership.membership_date, INTERVAL 2 YEAR) >=", $now);
+            $this->db->group_end();
+            $this->db->group_end();
 
             $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
             $this->db->join('service', 'service.id = users.service_category', 'left');
@@ -82,8 +91,17 @@ class Our_model extends CI_Model {
 
               //  $this->db->where('users.verify !=', '2');
                //  $this->db->where('user_membership.type !=','Lifetime');
-                  $this->db->where_in('user_membership.type', ['Join','Upgrade']);
+                  $this->db->where_in('user_membership.type', ['Join','Upgrade','Renew']);
                   $this->db->where('user_membership.membership_status', 'Active');
+
+                  $now = date('Y-m-d H:i:s');
+                  $this->db->group_start();
+                  $this->db->where('user_membership.membership_expiry_date >=', $now);
+                  $this->db->or_group_start();
+                  $this->db->where('user_membership.membership_expiry_date IS NULL', null, false);
+                  $this->db->where("DATE_ADD(user_membership.membership_date, INTERVAL 2 YEAR) >=", $now);
+                  $this->db->group_end();
+                  $this->db->group_end();
 
                 $this->apply_member_list_filters($search);
 

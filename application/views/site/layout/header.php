@@ -307,6 +307,9 @@
                                         class="text-white block md:px-4 py-2 md:text-sm md:text-gray-700 md:hover:bg-blues md:hover:text-white font-semibold"
                                         role="menuitem">Join Now</a>
 
+                                    <a href="<?php echo base_url('/page/membershiprenew'); ?>"
+                                        class="text-white block md:px-4 py-2 md:text-sm md:text-gray-700 md:hover:bg-blues md:hover:text-white font-semibold"
+                                        role="menuitem">Renew Membership</a>
 
                                     <a href="<?php echo base_url('/page/membershipupgrade'); ?>"
                                         class="text-white block md:px-4 py-2 md:text-sm md:text-gray-700 md:hover:bg-blues md:hover:text-white font-semibold"

@@ -11,7 +11,7 @@ class Common_model extends CI_Model {
                 $this->db->select('r.phone as ref_phone , r.first_name as ref_first_name , r.middle_name as ref_middle_name , r.last_name as ref_last_name');
                 $this->db->select('department.name as department_name');
                 $this->db->select('service.name as service_name');
-                $this->db->select('user_membership.price as m_price , user_membership.membership_status ,user_membership.id as user_membership_id , user_membership.type as m_type');
+                $this->db->select('user_membership.price as m_price , user_membership.membership_status ,user_membership.id as user_membership_id , user_membership.type as m_type , user_membership.membership_date , user_membership.membership_expiry_date');
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                 $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
                  $this->db->select('state.name as state');
@@ -139,7 +139,7 @@ class Common_model extends CI_Model {
                 $this->db->select('r.phone as ref_phone , r.first_name as ref_first_name , r.middle_name as ref_middle_name , r.last_name as ref_last_name');
                 $this->db->select('department.name as department_name');
                 $this->db->select('service.name as service_name');
-                $this->db->select('user_membership.price as m_price , user_membership.membership_status ,user_membership.id as user_membership_id , user_membership.type as m_type');
+                $this->db->select('user_membership.price as m_price , user_membership.membership_status ,user_membership.id as user_membership_id , user_membership.type as m_type , user_membership.membership_date , user_membership.membership_expiry_date');
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                 $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
                 $this->db->select('state.name as state');
@@ -163,8 +163,18 @@ class Common_model extends CI_Model {
 
                 $this->db->where('users.role' , 'User');
                // $this->db->where('user_membership.type !=', 'Lifetime');
-                $this->db->where_in('user_membership.type', ['Join','Upgrade']);
+                $this->db->where_in('user_membership.type', ['Join','Upgrade','Renew']);
                 $this->db->where('user_membership.membership_status','Active');
+
+                // Active non-lifetime members only: expiry date >= current time
+                $now = date('Y-m-d H:i:s');
+                $this->db->group_start();
+                $this->db->where('user_membership.membership_expiry_date >=', $now);
+                $this->db->or_group_start();
+                $this->db->where('user_membership.membership_expiry_date IS NULL', null, false);
+                $this->db->where("DATE_ADD(user_membership.membership_date, INTERVAL 2 YEAR) >=", $now);
+                $this->db->group_end();
+                $this->db->group_end();
 
                 $this->db->join('users as r', 'r.phone = users.ref_mobile', 'left');
                 $this->db->join('department', 'department.id = users.name_of_diparment', 'left');
@@ -199,6 +209,125 @@ class Common_model extends CI_Model {
              
                 return $result;
 
+        }
+
+        public function getExpiredUsers($id = '') {
+
+                $this->db->select('users.*');
+                $this->db->select('r.phone as ref_phone , r.first_name as ref_first_name , r.middle_name as ref_middle_name , r.last_name as ref_last_name');
+                $this->db->select('department.name as department_name');
+                $this->db->select('service.name as service_name');
+                $this->db->select('user_membership.price as m_price , user_membership.membership_status ,user_membership.id as user_membership_id , user_membership.type as m_type , user_membership.membership_date , user_membership.membership_expiry_date');
+                $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
+                $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
+                $this->db->select('state.name as state');
+                $this->db->select("
+                        CASE
+                        WHEN users.district REGEXP '^[0-9]+$' THEN district.name
+                        ELSE users.district
+                        END as district
+                        ", false);
+                $this->db->select('office_state.name as office_state');
+                $this->db->select("
+                        CASE
+                        WHEN users.office_district REGEXP '^[0-9]+$' THEN post_district.name
+                        ELSE users.office_district
+                        END as office_district
+                        ", false);
+                 if(!empty($id))
+                {
+                        $this->db->where('users.id' , $id);
+                }
+
+                $this->db->where('users.role' , 'User');
+                $this->db->where_in('user_membership.type', ['Join','Upgrade','Renew']); // Non-lifetime only; Lifetime never expires
+                $this->db->where('user_membership.membership_status', 'Active');
+
+                // Expired: expiry date < current time
+                $now = date('Y-m-d H:i:s');
+                $this->db->group_start();
+                $this->db->where('user_membership.membership_expiry_date <', $now);
+                $this->db->or_group_start();
+                $this->db->where('user_membership.membership_expiry_date IS NULL', null, false);
+                $this->db->where("DATE_ADD(user_membership.membership_date, INTERVAL 2 YEAR) <", $now);
+                $this->db->group_end();
+                $this->db->group_end();
+
+                $this->db->join('users as r', 'r.phone = users.ref_mobile', 'left');
+                $this->db->join('department', 'department.id = users.name_of_diparment', 'left');
+                $this->db->join('service', 'service.id = users.service_category', 'left');
+                $this->db->join('user_membership', 'user_membership.id = users.membership_id');
+                $this->db->join('membership', 'membership.id = user_membership.membership_id', 'left');
+                $this->db->join('transaction', 'transaction.payment_id = users.payment_id', 'left');
+                $this->db->join('state', 'state.id = users.state', 'left');
+                $this->db->join('district', 'district.id = users.district', 'left');
+                $this->db->join('state as office_state', 'office_state.id = users.office_state', 'left');
+                $this->db->join('district as post_district', 'post_district.id = users.office_district', 'left');
+
+                $this->db->from('users');
+
+                $this->db->order_by('users.id',  'DESC'); 
+
+                 if(empty($id))
+                {
+                       $query = $this->db->get();
+                        $result =  $query->result_array();
+                }else
+                {
+                     $query = $this->db->get();
+                        $result =  $query->row_array();
+                }
+
+                return $result;
+
+        }
+
+        public function getActiveUsersCount() {
+                $now = date('Y-m-d H:i:s');
+                $this->db->from('users');
+                $this->db->join('user_membership', 'user_membership.id = users.membership_id');
+                $this->db->where('users.role', 'User');
+                $this->db->where('users.verify', '1');
+                $this->db->where('user_membership.membership_status', 'Active');
+                $this->db->group_start();
+                $this->db->where('user_membership.type', 'Lifetime');
+                $this->db->or_group_start();
+                $this->db->where_in('user_membership.type', ['Join', 'Upgrade', 'Renew']);
+                $this->db->group_start();
+                $this->db->where('user_membership.membership_expiry_date >=', $now);
+                $this->db->or_group_start();
+                $this->db->where('user_membership.membership_expiry_date IS NULL', null, false);
+                $this->db->where("DATE_ADD(user_membership.membership_date, INTERVAL 2 YEAR) >=", $now);
+                $this->db->group_end();
+                $this->db->group_end();
+                $this->db->group_end();
+                $this->db->group_end();
+                return $this->db->count_all_results();
+        }
+
+        public function getLatestActiveMembers($limit = 10) {
+                $now = date('Y-m-d H:i:s');
+                $this->db->select('users.*, user_membership.type as m_type, user_membership.membership_date, user_membership.membership_expiry_date');
+                $this->db->from('users');
+                $this->db->join('user_membership', 'user_membership.id = users.membership_id');
+                $this->db->where('users.role', 'User');
+                $this->db->where('user_membership.membership_status', 'Active');
+                $this->db->group_start();
+                $this->db->where('user_membership.type', 'Lifetime');
+                $this->db->or_group_start();
+                $this->db->where_in('user_membership.type', ['Join', 'Upgrade', 'Renew']);
+                $this->db->group_start();
+                $this->db->where('user_membership.membership_expiry_date >=', $now);
+                $this->db->or_group_start();
+                $this->db->where('user_membership.membership_expiry_date IS NULL', null, false);
+                $this->db->where("DATE_ADD(user_membership.membership_date, INTERVAL 2 YEAR) >=", $now);
+                $this->db->group_end();
+                $this->db->group_end();
+                $this->db->group_end();
+                $this->db->group_end();
+                $this->db->order_by('users.id', 'DESC');
+                $this->db->limit($limit);
+                return $this->db->get()->result_array();
         }
 
 
@@ -257,23 +386,23 @@ END as office_district
                 $this->db->select('r.phone as ref_phone , r.first_name as ref_first_name , r.middle_name as ref_middle_name , r.last_name as ref_last_name');
                 $this->db->select('department.name as department_name');
                 $this->db->select('service.name as service_name');
-                $this->db->select('user_membership.price as m_price , user_membership.membership_status ,user_membership.id as user_membership_id');
+                $this->db->select('user_membership.price as m_price , user_membership.membership_status ,user_membership.id as user_membership_id , user_membership.type as m_type , user_membership.membership_date , user_membership.membership_expiry_date');
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                 $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
                   $this->db->select('state.name as state');
                  $this->db->select("
-CASE
-    WHEN users.district REGEXP '^[0-9]+$' THEN district.name
-    ELSE users.district
-END as district_name
-", false);
-                 $this->db->select('office_state.name as office_state');
-                 $this->db->select("
-CASE
-    WHEN users.office_district REGEXP '^[0-9]+$' THEN post_district.name
-    ELSE users.office_district
-END as office_district_name
-", false);
+                CASE
+                WHEN users.district REGEXP '^[0-9]+$' THEN district.name
+                ELSE users.district
+                END as district_name
+                ", false);
+                                $this->db->select('office_state.name as office_state');
+                                $this->db->select("
+                CASE
+                WHEN users.office_district REGEXP '^[0-9]+$' THEN post_district.name
+                ELSE users.office_district
+                END as office_district_name
+                ", false);
                  if(!empty($where))
                 {
                          $this->db->where($where);
