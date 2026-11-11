@@ -55,11 +55,29 @@
 								<p style="font-size:14px; color:#555555;">Amount: <b style="color:#000000">₹<?php echo $user['m_price']; ?></b></p>
 							</td>
 							<td align="right" valign="top">
-								<p style="font-size:14px; color:#555555;">Date: </p>
+								<p style="font-size:14px; color:#555555;">Joining Date: </p>
 								<div style="height:8px"></div>
 								<p style="font-size:14px; color:#000000;"><b><?php echo  date("d-m-Y", strtotime($user['membership_join_date'])); ?></b></p>
 							</td>
+							<td align="right" valign="top">
+								<p style="font-size:14px; color:#555555;">Renew at: </p>
+								<div style="height:8px"></div>
+								<p style="font-size:14px; color:#000000;"><b><?= !empty($user['renewal_date'])
+									? date('d-m-Y', strtotime($user['renewal_date']))
+									: 'N/A'; ?></b></p>
+							</td>
+							<td align="right" valign="top">
+								<p style="font-size:14px; color:#555555;">Expiry Date: </p>
+								<div style="height:8px"></div>
+								<p style="font-size:14px; color:#000000;"><b><?= (
+									$user['m_type'] === 'Lifetime' ||
+									empty($user['membership_expiry_date'])
+								)
+									? 'Lifetime'
+									: date('d-m-Y', strtotime($user['membership_expiry_date'])); ?></b></p>
+							</td>
 						</tr>
+						 
 					</table>
 				</td>
 			</tr>

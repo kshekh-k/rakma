@@ -1013,7 +1013,10 @@ END as office_district
                 $this->db->select('user_membership.price as m_price , user_membership.membership_status ,user_membership.id as user_membership_id , user_membership.type as m_type');
                 $this->db->select('membership.name as membership_name , membership.price as m_ship_price');
                 $this->db->select('transaction.payment_status as payment_status , transaction.price as txn_amount , transaction.type');
-                 $this->db->select('state.name as state');
+                $this->db->select('state.name as state');
+                $this->db->select('user_membership.membership_date as current_membership_date');
+                $this->db->select('user_membership.membership_expiry_date as membership_expiry_date');
+
                 //  $this->db->select('district.name as district');
                 //  $this->db->select('post_district.name as office_district');
 
@@ -1032,6 +1035,24 @@ END as office_district
                 END as office_district
                 ", false);
 
+
+                $this->db->select("
+                (
+                        SELECT MIN(um.membership_date)
+                        FROM user_membership um
+                        WHERE um.user_id = users.id
+                        AND um.type = 'Join'
+                ) AS joining_date
+                ", false);
+
+                $this->db->select("
+                (
+                        SELECT MAX(um.membership_date)
+                        FROM user_membership um
+                        WHERE um.user_id = users.id
+                        AND um.type = 'Renew'
+                ) AS renewal_date
+                ", false);
 
 
                  $this->db->select('office_state.name as office_state');
